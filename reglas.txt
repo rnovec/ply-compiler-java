@@ -1,0 +1,60 @@
+//// Gramática del fichero de gramática
+//// Conjunto de símbolos terminales
+Terminales = { AOLOGIC ASSIGN BOOL CHARS COMA DIVIDE END_LINE EQUALS EXCLA FOR FUNCTION GREATER GREATERTHAN ID IF INT LBLOCK LESS LESSTHAN LPAREN MINUS MOD NOASSIG NUMBER OLOGIC PLUS PROMPT RBLOCK RETURN RPAREN STRINGS TIMES VAR WRITE YLOGIC }
+
+//// Conjunto de símbolo no terminales
+NoTerminales = { P S argv argv_rec bloque_sin_tipo scope comun cond2 condiciones exp2 expMul2 values values functions ids idsfun return_dec sentences types declarations }
+
+//// Axioma
+Axioma = P
+
+//// Lista de producciones
+Producciones = {
+P -> S
+S -> sentences S
+S -> sentences END_LINE S
+S -> sentences
+sentences -> declarations
+sentences -> functions
+functions -> types ID LPAREN argv RPAREN LBLOCK scope RBLOCK
+argv -> argv_rec
+argv -> 
+argv_rec -> types ID COMA argv_rec
+argv_rec -> types ID
+scope -> declarations scope
+declarations -> WHILE LPAREN condiciones RPAREN LBLOCK scope RBLOCK
+declarations -> ID ASSIGN values
+declarations -> types ID ASSIGN values
+types -> INT
+types -> STRING
+types -> FLOAT
+types -> BOOLEAN
+types -> VOID
+values -> ID
+values -> ID exp2
+values -> NUMBER exp2
+exp2 -> PLUS values
+exp2 -> MINUS values
+exp2 -> TIMES values
+exp2 -> DIVIDE values
+exp2 -> MOD values
+condiciones -> ID
+condiciones -> ID cond2
+condiciones -> EXCLA comun
+cond2 -> GREATERTHAN condiciones
+cond2 -> LESSTHAN condiciones
+cond2 -> EQUALS condiciones
+cond2 -> NOASSIG condiciones
+cond2 -> LESS condiciones
+cond2 -> GREATER condiciones
+cond2 -> OLOGIC condiciones
+cond2 -> YLOGIC condiciones
+values -> EXCLA comun
+values -> comun expMul2
+expMul2 -> cond2
+expMul2 -> exp2
+expMul2 -> 
+values -> STRINGS
+comun -> NUMBER
+comun -> ID
+}

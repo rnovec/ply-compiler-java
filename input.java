@@ -1,9 +1,9 @@
 /* Programa de ejemplo */
 //	LLAMADAS A FUNCION Y CASOS
-int a = 1;
+float a = 24;
 
-void hello(string a, float b) {
-    while (1) {
-        float c = a + b - c;
-    }
-};
+// void hello(string a, float b) {
+//     while (1) {
+//         float c = a + b - c;
+//     }
+// };

@@ -4,7 +4,6 @@ import sys
 # Palabras Reservadas de JavaScript
 reserved = (
     'int',
-    'char',
     'boolean',
     'float',
     'string',
@@ -28,14 +27,13 @@ tokens = (
     'RBLOCK',
     'ID',
     'COMA',
-    'AOLOGIC',
     'STRINGS',
     'EQUALS',
     'LESS',
     'GREATER',
     'LESSTHAN',
     'GREATERTHAN',
-    'NOASSIG',
+    'NOEQUAL',
     'YLOGIC',
     'OLOGIC',
     'EXCLA'
@@ -53,7 +51,7 @@ t_MOD = r'\%'
 t_GREATERTHAN = r'>='
 t_LESSTHAN = r'<='
 t_EQUALS = r'=='
-t_NOASSIG = r'!='
+t_NOEQUAL = r'!='
 t_LESS = r'<'
 t_GREATER = r'>'
 
@@ -70,8 +68,6 @@ t_LBLOCK = r'\{'
 t_RBLOCK = r'\}'
 t_COMA = r','
 
-# Asignacion con o logico (Grupo 51)
-t_AOLOGIC = r'\|='
 # Cadena de Caracteres
 t_STRINGS = r'\"([^\\\n]|(\\(.|\n)))*?\"'
 # String que ignora espacios y tabuladores
@@ -81,31 +77,31 @@ t_ignore_COMMENT = r'/\*(.|\n)*?\*/'
     
 
 def t_NUMBER(t):
-    r'\d+\.?(\d+)?'
-    if eval(t.value) <= 32767 and '.' not in t.value:
-        t.value = eval(t.value)
-        return t
-    else:
-        print ("Lexical: illegal character '%s' in line '%d' position" % (t.value, t.lineno))
-        t.lexer.skip(1)
+    r'\d+'
+    t.value = int(t.value)
+    print('NUMBER')
+    return t
  
 def t_ID(t):
     r'[a-zA-z_]\w*'
     if t.value in reserved:
+        print('ID')
         t.type = t.value.upper()
     return t
  
 def t_newline(t):
     r'\n+'
-    t.lexer.lineno += len(t.value)
+    t.lexer.lineno += t.value.count("\n")
  
 def t_comment(t):
     r'\//.*'
     pass
 
 def t_error(t):
-    print ("Lexical: illegal character '%s' in line '%d' position" % (t.value[0], t.lineno))
+    line = t.lexer.lineno
+    print("Character %s not recognized at line %d" % (t.value[0], line))
     t.lexer.skip(1)
+
 
 lex.lex()
 

@@ -123,3 +123,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# my stuff
+parsetab.py
+parser.out
+output/
