@@ -1,10 +1,11 @@
 import ply.lex as lex
 import sys
+import re
 
-# Palabras Reservadas de JavaScript
-reserved = (
+# Palabras Reservadas de Java
+types = (
     'int',
-    'boolean',
+    'bool',
     'float',
     'string',
     'void',
@@ -13,52 +14,31 @@ reserved = (
 
 # Lista de tokens
 tokens = (
-    'END_LINE',
+    'ID',
+    'IT',
+    'TD',
     'NUMBER',
-    'PLUS',
-    'MINUS',
-    'TIMES',
-    'DIVIDE',
-    'MOD',
     'ASSIGN',
     'LPAREN',
     'RPAREN',
     'LBLOCK',
     'RBLOCK',
-    'ID',
+    'OPAR',
     'COMA',
-    'STRINGS',
-    'EQUALS',
-    'LESS',
-    'GREATER',
-    'LESSTHAN',
-    'GREATERTHAN',
-    'NOEQUAL',
-    'YLOGIC',
-    'OLOGIC',
-    'EXCLA'
-) + tuple(map(lambda s:s.upper(),reserved))
- 
+    'OPRE',
+    'OPLO',
+    'END_LINE',
+)
+
 
 # Operadores Aritmeticos
-t_PLUS = r'\+'
-t_MINUS = r'-'
-t_TIMES = r'\*'
-t_DIVIDE = r'/'
-t_MOD = r'\%'
+t_OPAR = r'\+|-|\*|\%'
 
-#Operadores Relacionales
-t_GREATERTHAN = r'>='
-t_LESSTHAN = r'<='
-t_EQUALS = r'=='
-t_NOEQUAL = r'!='
-t_LESS = r'<'
-t_GREATER = r'>'
+# Operadores Relacionales
+t_OPRE = r'>=|<=|==|!=|<|>'
 
-#Operadores Logicos
-t_YLOGIC = r'&&'
-t_OLOGIC = r'\|\|'
-t_EXCLA = r'\!'
+# Operadores Logicos
+t_OPLO = r'&&|(\|\|)|\!'
 
 t_END_LINE = r';'
 t_ASSIGN = r'='
@@ -68,53 +48,82 @@ t_LBLOCK = r'\{'
 t_RBLOCK = r'\}'
 t_COMA = r','
 
-# Cadena de Caracteres
-t_STRINGS = r'\"([^\\\n]|(\\(.|\n)))*?\"'
 # String que ignora espacios y tabuladores
 t_ignore = ' \t\v'
 # Ignora comentarios de tipo /* */
 t_ignore_COMMENT = r'/\*(.|\n)*?\*/'
-    
+
 
 def t_NUMBER(t):
-    r'\d+'
-    t.value = int(t.value)
-    print('NUMBER')
+    r'\d+(\.\d+)?'
+    t.value = float(t.value)
     return t
- 
+
+
 def t_ID(t):
     r'[a-zA-z_]\w*'
-    if t.value in reserved:
-        print('ID')
-        t.type = t.value.upper()
+    if t.value in types:
+        if t.value == 'while':
+            t.type = 'IT'
+        else:
+            t.type = 'TD' # t.value.upper()
     return t
- 
+
+
 def t_newline(t):
     r'\n+'
     t.lexer.lineno += t.value.count("\n")
- 
+
+
 def t_comment(t):
     r'\//.*'
     pass
 
+
 def t_error(t):
     line = t.lexer.lineno
-    print("Character %s not recognized at line %d" % (t.value[0], line))
+    desc = "Character %s not recognized at line %d" % (t.value[0], line)
+    t.type = 'LXERR'
+    t.value = t.value[0]
+    # errors.append({'value': t.value[0], 'line': line, 'type': t.type, 'desc': desc})
     t.lexer.skip(1)
+    return t
+
+
+def tokenizer(data):
+    errors = 0
+    ftok = open("output/tokens.txt", "w+")
+    lex.input(data)
+    tokens_matched = list()
+    while True:
+        token = lex.token()
+        if not token:
+            break
+        ftok.write(f"{token.type} \n")
+        if not re.match(r'LXERR', token.type):
+            tokens_matched.append({
+                # 'line': token.lineno,
+                'type': token.type,
+                'value': token.value,
+                # 'pos': token.lexpos
+            })
+        else:
+            errors += 1
+            tokens_matched.append({
+                'line': token.lineno,
+                'type': token.type + str(errors),
+                'value': token.value,
+                'pos': token.lexpos
+            })
+    ftok.close()
+    return tokens_matched
 
 
 lex.lex()
 
-# MAIN 
+# MAIN
 if __name__ == "__main__":
-    f = open(sys.argv[1],'r')
+    f = open(sys.argv[1], 'r')
     datos = f.read()
     f.close()
-    ftok = open("output/tokens.txt","w+")
-    lex.input(datos)
-    
-    while 1 :
-    	token = lex.token()
-    	if not token: break
-    	ftok.write(f"{token.lineno}: <{token.type}, {token.value}> \n")
-    ftok.close()
+    tokenizer(datos)
