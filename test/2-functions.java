@@ -8,7 +8,7 @@ void hello8() {
 
 float sum(int b, float c) {
     float a = 24 + 3 - 1.5;
-    a = b + c;
+    a = b + d;
 }
 // {
 //     while (1) {

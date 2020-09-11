@@ -10,30 +10,45 @@ reserved = (
     'float',
     'string',
     'void',
-    # 'while'
+    'while'
+)
+
+multiple_tok = (
+    'ID',
+    'NUMBER',
 )
 
 tokens = (
-    'ID',
-    'TD',
-    # 'IT',
-    'OPAR',
+    'TD1',
+    'TD2',
+    'TD3',
+    'TD4',
+    'TD5',
+    'IT1',
+    'OPAR1',
+    'OPAR2',
+    'OPAR3',
+    'OPAR4',
+    'OPAR5',
     # 'OPRE',
     # 'OPLO',
-    'NUMBER',
-    'EQUALS',
-    'LPAREN',
-    'RPAREN',
-    'LBLOCK',
-    'RBLOCK',
-    'COMA',
-    'END_LINE'
-)
+    'ASSIGN1',
+    'DEL1',
+    'DEL2',
+    'DEL3',
+    'DEL4',
+    'SEP1',
+    'END_LINE1'
+) + multiple_tok
 
 # Tokens
 
 # Operadores Aritmeticos
-t_OPAR = r'\+|-|\*|\%|/'
+t_OPAR1 = r'\+'
+t_OPAR2 = r'-|/'
+t_OPAR3 = r'\*/'
+t_OPAR4 = r'/'
+t_OPAR5 = r'\%/'
 
 # Operadores Relacionales
 # t_OPRE = r'>=|<=|==|!=|<|>'
@@ -41,13 +56,13 @@ t_OPAR = r'\+|-|\*|\%|/'
 # Operadores Logicos
 # t_OPLO = r'& & | (\|\|)|\!
 
-t_EQUALS = r'='
-t_LPAREN = r'\('
-t_RPAREN = r'\)'
-t_LBLOCK = r'\{'
-t_RBLOCK = r'\}'
-t_COMA = r','
-t_END_LINE = r';'
+t_ASSIGN1 = r'='
+t_DEL1 = r'\('
+t_DEL2 = r'\)'
+t_DEL3 = r'\{'
+t_DEL4 = r'\}'
+t_SEP1 = r','
+t_END_LINE1 = r';'
 # String que ignora espacios y tabuladores
 t_ignore = ' \t\v'
 # Ignora comentarios de tipo /* */
@@ -58,9 +73,9 @@ def t_ID(t):
     r'[a-zA-z_]\w*'
     if t.value in reserved:
         if t.value == 'while':
-            t.type = 'IT'
+            t.type = 'IT1'
         else:
-            t.type = 'TD'  # t.value.upper()
+            t.type = 'TD' + str(reserved.index(t.value) + 1)
     return t
 
 
@@ -89,35 +104,52 @@ def t_error(t):
     t.lexer.skip(1)
     return t
 
+def create_set(T):
+    seen = set()
+    unique_tokens = list()
+    counters = {}
+
+    for t in tokens:
+        counters[t] = 0
+
+    for d in T:
+        if d['value'] not in seen or re.match(r'LXERR', d['type']):
+            seen.add(d['value'])
+            unique_tokens.append(d)
+
+    for token in unique_tokens:
+        if not re.match(r'LXERR', token['type']):
+            counters[token['type']] += 1
+            token['type'] = token['type'] + str(counters[token['type']])
+    return unique_tokens
 
 def tokenizer(data):
     errors = 0
     ftok = open("output/tokens.txt", "w+")
     lex.input(data)
-    tokens_matched = list()
+    tokens = list()
     while True:
         token = lex.token()
         if not token:
             break
         ftok.write(f"{token.value}\t\t{token.type}\n")
         if not re.match(r'LXERR', token.type):
-            tokens_matched.append({
-                # 'line': token.lineno,
+            tokens.append({
+                'line': token.lineno,
                 'type': token.type,
                 'value': token.value,
-                # 'pos': token.lexpos
+                'pos': token.lexpos
             })
         else:
             errors += 1
-            tokens_matched.append({
+            tokens.append({
                 'line': token.lineno,
                 'type': token.type + str(errors),
                 'value': token.value,
                 'pos': token.lexpos
             })
     ftok.close()
-    return tokens_matched
-
+    return tokens
 
 # Build the lexer
 lex.lex()

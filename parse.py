@@ -19,7 +19,7 @@ errors = list()
 
 def p_statement(p):
     '''S : sentences S
-         | sentences END_LINE S'''
+         | sentences END_LINE1 S'''
     pass
 
 
@@ -29,12 +29,12 @@ def p_sentences(p):
 
 
 def p_declarations(p):
-    'sentences : declarations END_LINE'
+    'sentences : declarations END_LINE1'
     pass
 
 
 def p_expressions(p):
-    'sentences : expression END_LINE'
+    'sentences : expression END_LINE1'
     pass
 
 
@@ -46,12 +46,16 @@ def p_functions(p):
 """ 2 : DECLARACIONES  """
 
 def p_var_declarations(p):
-    'declarations : TD ID EQUALS expression'
+    'declarations : TD ID ASSIGN1 expression'
     names[p[2]] = p[4]
 
 
 def p_expression_binop(p):
-    '''expression : expression OPAR expression'''
+    '''expression : expression OPAR1 expression
+                  | expression OPAR2 expression
+                  | expression OPAR3 expression
+                  | expression OPAR4 expression
+                  | expression OPAR5 expression'''
     if p[2] == '+':
         p[0] = p[1] + p[3]
     elif p[2] == '-':
@@ -63,7 +67,7 @@ def p_expression_binop(p):
 
 
 def p_expression_group(p):
-    'expression : LPAREN expression RPAREN'
+    'expression : DEL1 expression DEL2'
     p[0] = p[2]
 
 
@@ -89,7 +93,7 @@ def p_expression_name(p):
 
 
 def p_expression_name_assign(p):
-    'expression : ID EQUALS expression'
+    'expression : ID ASSIGN1 expression'
     try:
         print(names[p[1]])
         names[p[1]] = p[3]
@@ -103,9 +107,14 @@ def p_expression_name_assign(p):
 """ 3 : FUNCIONES  """
 
 def p_function(p):
-    'function : TD ID LPAREN argv RPAREN LBLOCK S RBLOCK'
+    'function : TD ID DEL1 argv DEL2 DEL3 S DEL4'
     functions[p[2]] = 0
+    
 
+def p_function_error(p):
+    'function : ID ID DEL1 argv DEL2 DEL3 S DEL4'
+    functions[p[2]] = 0
+    
 def p_argv(p):
     '''argv : argv_rec
             | '''
@@ -113,7 +122,7 @@ def p_argv(p):
 
 
 def p_argv_rec(p):
-    '''argv_rec : TD ID COMA argv_rec
+    '''argv_rec : TD ID SEP1 argv_rec
                 | TD ID'''
     names[p[2]] = 0
     
