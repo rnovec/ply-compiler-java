@@ -12,37 +12,38 @@ precedence = ()
 
 # dictionary of names (for storing variables)
 names = {}
+functions = {}
 errors = list()
 
-""" SENTENCIAS RECURSIVAS """
+""" 1 : SENTENCIAS RECURSIVAS """
 
 def p_statement(p):
     '''S : sentences S
          | sentences END_LINE S'''
-    print(p[1])
+    pass
 
 
 def p_sentences(p):
     'S : sentences'
-    p[0] = p[1]
+    pass
 
 
 def p_declarations(p):
-    'sentences : declarations'
-    p[0] = p[1]
+    'sentences : declarations END_LINE'
+    pass
 
 
 def p_expressions(p):
-    'sentences : expression'
-    p[0] = p[1]
+    'sentences : expression END_LINE'
+    pass
 
 
-# def p_functions(p):
-#     'sentences : function'
-#     print(p[1])
+def p_functions(p):
+    'sentences : function'
+    pass
 
 
-""" 1 : DECLARACIONES  """
+""" 2 : DECLARACIONES  """
 
 def p_var_declarations(p):
     'declarations : TD ID EQUALS expression'
@@ -83,13 +84,41 @@ def p_expression_name(p):
     except LookupError:
         print(f"Undefined name {p[1]!r}")
         errors.append("Sintantic: syntax error '%s' in line %d" %
-                      (p.value, p.lineno))
+                      (p[1], p.lexer.lineno))
         p[0] = 0
 
 
-""" 1 : FUNCIONES  """
+def p_expression_name_assign(p):
+    'expression : ID EQUALS expression'
+    try:
+        print(names[p[1]])
+        names[p[1]] = p[3]
+    except LookupError:
+        print(f"Undefined name {p[1]!r}")
+        errors.append("Sintantic: syntax error '%s' in line %d" %
+                      (p[1], p.lexer.lineno))
+        p[0] = 0
 
 
+""" 3 : FUNCIONES  """
+
+def p_function(p):
+    'function : TD ID LPAREN argv RPAREN LBLOCK S RBLOCK'
+    functions[p[2]] = 0
+
+def p_argv(p):
+    '''argv : argv_rec
+            | '''
+    pass
+
+
+def p_argv_rec(p):
+    '''argv_rec : TD ID COMA argv_rec
+                | TD ID'''
+    names[p[2]] = 0
+    
+
+""" 4 : ERRORES  """
 def p_error(p):
     print("Sintantic: syntax error '%s' in line %d" % (p.value, p.lineno))
     sys.exit()

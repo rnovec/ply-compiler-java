@@ -24,8 +24,9 @@ tokens = (
     'EQUALS',
     'LPAREN',
     'RPAREN',
-    # 'LBLOCK',
-    # 'RBLOCK',
+    'LBLOCK',
+    'RBLOCK',
+    'COMA',
     'END_LINE'
 )
 
@@ -43,8 +44,9 @@ t_OPAR = r'\+|-|\*|\%|/'
 t_EQUALS = r'='
 t_LPAREN = r'\('
 t_RPAREN = r'\)'
-# t_LBLOCK = r'\{'
-# t_RBLOCK = r'\}'
+t_LBLOCK = r'\{'
+t_RBLOCK = r'\}'
+t_COMA = r','
 t_END_LINE = r';'
 # String que ignora espacios y tabuladores
 t_ignore = ' \t\v'
