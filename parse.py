@@ -46,7 +46,7 @@ def p_functions(p):
 """ 2 : DECLARACIONES  """
 
 def p_var_declarations(p):
-    'declarations : TD ID ASSIGN1 expression'
+    '''declarations : types ID ASSIGN1 expression'''
     names[p[2]] = p[4]
 
 
@@ -107,7 +107,7 @@ def p_expression_name_assign(p):
 """ 3 : FUNCIONES  """
 
 def p_function(p):
-    'function : TD ID DEL1 argv DEL2 DEL3 S DEL4'
+    '''function : types ID DEL1 argv DEL2 DEL3 S DEL4'''
     functions[p[2]] = 0
     
 
@@ -122,9 +122,16 @@ def p_argv(p):
 
 
 def p_argv_rec(p):
-    '''argv_rec : TD ID SEP1 argv_rec
-                | TD ID'''
+    '''argv_rec : types ID SEP1 argv_rec
+                | types ID'''
     names[p[2]] = 0
+
+def p_types(p):
+    '''types : TD1
+             | TD2
+             | TD3
+             | TD4
+             | TD5'''
     
 
 """ 4 : ERRORES  """
