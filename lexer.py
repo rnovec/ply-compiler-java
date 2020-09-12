@@ -16,8 +16,10 @@ reserved = (
 
 multiple_tok = (
     'ID',
-    'NUMBER',
+    'NUMBER'
 )
+
+
 class JavaLexer(object):
     tokens = (
         'TD1',
@@ -41,6 +43,11 @@ class JavaLexer(object):
         'SEP1',
         'END_LINE1'
     ) + multiple_tok
+
+    counters = {}
+    names = {}
+    error_count = 0
+    errors = []
 
     # Tokens
 
@@ -69,7 +76,6 @@ class JavaLexer(object):
     # Ignora comentarios de tipo /* */
     t_ignore_COMMENT = r'/\*(.|\n)*?\*/'
 
-
     def t_ID(self, t):
         r'[a-zA-z_]\w*'
         if t.value in reserved:
@@ -79,17 +85,14 @@ class JavaLexer(object):
                 t.type = 'TD' + str(reserved.index(t.value) + 1)
         return t
 
-
     def t_NUMBER(self, t):
         r'\d+(\.\d+)?'
         t.value = float(t.value)
         return t
 
-
     def t_newline(self, t):
         r'\n+'
         t.lexer.lineno += t.value.count("\n")
-
 
     def t_comment(self, t):
         r'\//.*'
@@ -98,67 +101,68 @@ class JavaLexer(object):
     def t_error(self, t):
         line = t.lexer.lineno
         desc = "Character %s not recognized at line %d" % (t.value[0], line)
-        t.type = 'LXERR'
+        self.error_count += 1
+        t.type = 'LXERR' + str(self.error_count)
         t.value = t.value[0]
-        # errors.append({'value': t.value[0], 'line': line, 'type': t.type, 'desc': desc})
         t.lexer.skip(1)
+        self.errors.append({
+            'line': t.lineno,
+            'type': t.type,
+            'value': t.value,
+            'pos': t.lexpos
+        })
         return t
 
     # Build the lexer
-    def build(self,**kwargs):
+    def build(self, **kwargs):
+        for t in multiple_tok:
+            self.counters[t] = 0
         self.lexer = lex.lex(module=self, **kwargs)
 
-    def create_set(self, T):
-        seen = set()
-        unique_tokens = list()
-        counters = {}
-        ftok = open("output/tokens.csv", "w+")
-        writer = csv.writer(ftok)
-        writer.writerow(["LEX", "TOKEN", "LINE", "POS"])
-        for t in self.tokens:
-            counters[t] = 0
-
-        for d in T:
-            if d['value'] not in seen or re.match(r'LXERR', d['type']):
-                seen.add(d['value'])
-                unique_tokens.append(d)
-
-        for token in unique_tokens:
-            if not re.match(r'LXERR', token['type']) and token['type'] in multiple_tok:
-                counters[token['type']] += 1
-                token['type'] = token['type'] + str(counters[token['type']])
-            # ftok.write(f"{token['value']},{token['type']}\n")
-            writer.writerow([token['value'], token['type'],
-                            token['line'], token['pos']])
-        ftok.close()
-        return unique_tokens
-
-
     def tokenizer(self, data):
-        errors = 0
         self.lexer.input(data)
-        tokens = list()
+        tokenFile = list()
+        seen = set()
+        simtable = list()
+        stfile = open("output/simtable.csv", "w+")
+        ftok = open("output/tokensfile.txt", "w+")
+        stwriter = csv.writer(stfile)
+        stwriter.writerow(["LEX", "TOKEN"])
+
         while True:
             token = self.lexer.token()
             if not token:
                 break
-            if not re.match(r'LXERR', token.type):
-                tokens.append({
+            if token.value not in seen:
+                seen.add(token.value)
+                if token.type in multiple_tok:
+                    self.counters[token.type] += 1
+                    token.type += str(self.counters[token.type])
+                    self.names[token.value] = token.type
+        
+                stwriter.writerow([token.value, token.type])
+                simtable.append({
                     'line': token.lineno,
                     'type': token.type,
                     'value': token.value,
                     'pos': token.lexpos
                 })
-            else:
-                errors += 1
-                tokens.append({
-                    'line': token.lineno,
-                    'type': token.type + str(errors),
-                    'value': token.value,
-                    'pos': token.lexpos
-                })
-        return tokens
+            elif token.type in multiple_tok:
+                token.type = self.names[token.value]
 
+            tokenFile.append({
+                'line': token.lineno,
+                'type': token.type,
+                'value': token.value,
+                'pos': token.lexpos
+            })
+            if token.type == 'END_LINE1':
+                ftok.write(token.type + '\n')
+            else:
+                ftok.write(token.type + ' ')
+        stfile.close()
+        ftok.close()
+        return tokenFile, simtable, self.errors
 
 
 # MAIN
@@ -168,5 +172,5 @@ if __name__ == "__main__":
     f.close()
     JL = JavaLexer()
     JL.build()
-    T = JL.create_set(JL.tokenizer(datos))
-    print(T)
+    TF, ST, ERR = JL.tokenizer(datos)
+    print(ST)

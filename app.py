@@ -12,10 +12,8 @@ def tokenize():
     data = request.get_json(force=False, silent=False, cache=True)
     JL = JavaLexer()
     JL.build()
-    tokens = JL.tokenizer(data['program'])
-    tokens = JL.create_set(tokens)
-    return jsonify({'tokens': tokens})
-
+    tokensFile, simbolTable, errors = JL.tokenizer(data['program'])
+    return jsonify({'simbolTable': simbolTable, 'tokensFile': tokensFile, 'errors': errors})
 
 if __name__ == '__main__':
     app.run()
