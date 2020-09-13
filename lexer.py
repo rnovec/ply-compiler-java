@@ -105,18 +105,19 @@ class JavaLexer(object):
         t.type = 'LXERR' + str(self.error_count)
         t.value = t.value[0]
         t.lexer.skip(1)
-        self.errors.append({
-            'line': t.lineno,
-            'type': t.type,
-            'value': t.value,
-            'pos': t.lexpos
-        })
+        # self.errors.append({
+        #     'line': t.lineno,
+        #     'type': t.type,
+        #     'value': t.value,
+        #     'pos': t.lexpos
+        # })
         return t
 
     # Build the lexer
-    def build(self, **kwargs):
+    def __init__(self, **kwargs):
         for t in multiple_tok:
             self.counters[t] = 0
+        self.errors = list()
         self.lexer = lex.lex(module=self, **kwargs)
 
     def tokenizer(self, data):
@@ -162,7 +163,7 @@ class JavaLexer(object):
                 ftok.write(token.type + ' ')
         stfile.close()
         ftok.close()
-        return tokenFile, simtable, self.errors
+        return tokenFile, simtable
 
 
 # MAIN
@@ -171,6 +172,5 @@ if __name__ == "__main__":
     datos = f.read()
     f.close()
     JL = JavaLexer()
-    JL.build()
     TF, ST, ERR = JL.tokenizer(datos)
     print(ST)
