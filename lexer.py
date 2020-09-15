@@ -16,7 +16,7 @@ reserved = (
 
 multiple_tok = (
     'ID',
-    'NUMBER'
+    'CNE'
 )
 
 
@@ -35,13 +35,13 @@ class JavaLexer(object):
         'OPAR5',
         # 'OPRE',
         # 'OPLO',
-        'ASSIGN1',
+        'AS1',
         'DEL1',
         'DEL2',
         'DEL3',
         'DEL4',
         'SEP1',
-        'END_LINE1'
+        'SEP2'
     ) + multiple_tok
 
     counters = {}
@@ -53,10 +53,10 @@ class JavaLexer(object):
 
     # Operadores Aritmeticos
     t_OPAR1 = r'\+'
-    t_OPAR2 = r'-|/'
-    t_OPAR3 = r'\*/'
+    t_OPAR2 = r'-'
+    t_OPAR3 = r'\*'
     t_OPAR4 = r'/'
-    t_OPAR5 = r'\%/'
+    t_OPAR5 = r'\%'
 
     # Operadores Relacionales
     # t_OPRE = r'>=|<=|==|!=|<|>'
@@ -64,13 +64,13 @@ class JavaLexer(object):
     # Operadores Logicos
     # t_OPLO = r'& & | (\|\|)|\!
 
-    t_ASSIGN1 = r'='
+    t_AS1 = r'='
     t_DEL1 = r'\('
     t_DEL2 = r'\)'
     t_DEL3 = r'\{'
     t_DEL4 = r'\}'
-    t_SEP1 = r','
-    t_END_LINE1 = r';'
+    t_SEP1 = r';'
+    t_SEP2 = r','
     # String que ignora espacios y tabuladores
     t_ignore = ' \t\v'
     # Ignora comentarios de tipo /* */
@@ -78,6 +78,7 @@ class JavaLexer(object):
 
     def t_ID(self, t):
         r'[a-zA-z_]\w*'
+        print(t.value)
         if t.value in reserved:
             if t.value == 'while':
                 t.type = 'IT1'
@@ -85,7 +86,7 @@ class JavaLexer(object):
                 t.type = 'TD' + str(reserved.index(t.value) + 1)
         return t
 
-    def t_NUMBER(self, t):
+    def t_CNE(self, t):
         r'\d+(\.\d+)?'
         t.value = float(t.value)
         return t
@@ -157,7 +158,7 @@ class JavaLexer(object):
                 'value': token.value,
                 'pos': token.lexpos
             })
-            if token.type == 'END_LINE1':
+            if token.type == 'SEP1':
                 ftok.write(token.type + '\n')
             else:
                 ftok.write(token.type + ' ')
@@ -172,5 +173,5 @@ if __name__ == "__main__":
     datos = f.read()
     f.close()
     JL = JavaLexer()
-    TF, ST, ERR = JL.tokenizer(datos)
+    TF, ST = JL.tokenizer(datos)
     print(ST)

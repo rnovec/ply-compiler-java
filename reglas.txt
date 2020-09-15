@@ -1,0 +1,30 @@
+Rule 0     S' -> S
+Rule 1     S -> sentences S
+Rule 2     S -> sentences SEP1 S
+Rule 3     S -> sentences
+Rule 4     sentences -> declarations SEP1
+Rule 5     sentences -> expression SEP1
+Rule 6     sentences -> function
+Rule 7     declarations -> types ID AS1 expression
+Rule 8     declarations -> ID ID AS1 expression
+Rule 9     expression -> expression OPAR1 expression
+Rule 10    expression -> expression OPAR2 expression
+Rule 11    expression -> expression OPAR3 expression
+Rule 12    expression -> expression OPAR4 expression
+Rule 13    expression -> expression OPAR5 expression
+Rule 14    expression -> DEL1 expression DEL2
+Rule 15    expression -> CNE
+Rule 16    expression -> <empty>
+Rule 17    expression -> ID
+Rule 18    expression -> ID AS1 expression
+Rule 19    function -> types ID DEL1 argv DEL2 DEL3 S DEL4
+Rule 20    function -> ID ID DEL1 argv DEL2 DEL3 S DEL4
+Rule 21    argv -> argv_rec
+Rule 22    argv -> <empty>
+Rule 23    argv_rec -> types ID SEP2 argv_rec
+Rule 24    argv_rec -> types ID
+Rule 25    types -> TD1
+Rule 26    types -> TD2
+Rule 27    types -> TD3
+Rule 28    types -> TD4
+Rule 29    types -> TD5
