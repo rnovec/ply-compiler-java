@@ -61,18 +61,33 @@ Regla 29 types -> TD5
 - Por cada lexema en el código
   - Se ignoran espacios. comentarios y tabuladores
   - Se separa cada lexema que corresponda a alguno de las Expresiones Regulares
-  - ID, TD, CNE, IT, DEL, SEP, AS, OPLO, OPAR...
+  - **ID**, **TD**, **CNE**, **IT**, **DEL**, **SEP**, **AS**, **OPLO**, **OPAR**...
   - Si algun caracter/lexema no coincide con ningun token, se considera error léxicos
-  - Se aumenta el contador de errores y se le asigna el error ERRLX + i 
-  - al final se obtiene una lista de tokens, algunos duplicados como constantes numericas (CNE) e Identificadores (ID)
+  - Se aumenta el contador de errores y se le asigna el error ERRLX + i
+  - Al final se obtiene una lista de tokens, algunos duplicados como constantes numericas (CNE) e Identificadores (ID)
 - Por cada lexema duplicado:
   - Se agrega a la lista de vistos, tokens y tabla de simbolos
-  - si es un token duplicado se le signa el valor de su primera aparicion
-  - si es un SEP1 se agrega un salto de linea al archivo de tokens, sino un espacio.
-- Se cierran los archivos de salida y se devuelven las listas generadas (Archivo de tokens, Tabla de símbolos y Errores léxicos)
+  - Si es un token duplicado se le signa el valor de su primera aparicion
+  - Si es un SEP1 se agrega un salto de linea al archivo de tokens, sino un espacio.
+- Se cierran los archivos de salida y se devuelven las listas generadas (*Archivo de tokens*, *Tabla de símbolos* y *Errores léxicos*)
 
 ### Analisis Sintáctico
+
 - Con el analisi léxico realizado y los componentes léxicos generados
-- Se toma las listas de tokens
+- Se toma las listas de tokens y se identifican patrones que correspondan a las producciones
+  - Se inicia en una sentencia S que puede tener 3 variantes
+  - Declaraciones, funciones e iteradores
+  - Se asegura que cada uno de los tokens correspondan a alguna de las gramaticas y producciones establecidas
+  - Si es asi se continua la inspeccion de los siguientes tokens
+  - Si alguno no coincide con la proudccion esperada se arroja un error sintactico
+  - Se agrega la linea, el token, el valor y la pósicion donde ocurrio el error
+- Finalmente, se compara con el archivo de tokens para identificar los tokens que tuvieron error
 
 ### Analisis Semántico
+
+- Para las producciones de declaracion de variables se guarda el valor y el tipo de dato de la variable
+  - Se anexa al arreglo de nombres
+  - Si en las producciones de llamadas a variables no se reconoce el **ID** de la variable
+  - Es decir no se encuentra en el arreglo de nombres, se agrega un error al arreglo de errores
+  - Sino se actualiza el valor de la variable y se compara si los tipos de datos coinciden entre las variables involucradas en la asignacion
+- Finalmente, se compara la tabla de simbolos con el arreglo de nombres de variables y se asigna el tipo de dato a los tokens de tipo **ID**.
