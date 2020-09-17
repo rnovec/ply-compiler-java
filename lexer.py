@@ -1,10 +1,14 @@
-
+#-----------------------
+#
+# Análisis Léxico
+#
+#-----------------------
 import ply.lex as lex
 import sys
 import re
 import csv
 
-# Palabras Reservadas de Java
+# Palabras Reservadas
 reserved = (
     'int',
     'bool',
@@ -14,6 +18,7 @@ reserved = (
     'while'
 )
 
+# tokens multiples (0-N)
 multiple_tok = (
     'ID',
     'CNE'
@@ -21,6 +26,9 @@ multiple_tok = (
 
 
 class JavaLexer(object):
+    '''
+    Clase para el analisis lexico
+    '''
     tokens = (
         'TD1',
         'TD2',
@@ -44,6 +52,7 @@ class JavaLexer(object):
         'SEP2'
     ) + multiple_tok
 
+    # variables auxiliares
     counters = {}
     names = {}
     error_count = 0
@@ -65,20 +74,24 @@ class JavaLexer(object):
     # t_OPLO = r'& & | (\|\|)|\!
 
     t_AS1 = r'='
+
+    # Delimitadores
     t_DEL1 = r'\('
     t_DEL2 = r'\)'
     t_DEL3 = r'\{'
     t_DEL4 = r'\}'
+
+    # Separadores
     t_SEP1 = r';'
     t_SEP2 = r','
-    # String que ignora espacios y tabuladores
-    t_ignore = ' \t\v'
-    # Ignora comentarios de tipo /* */
-    t_ignore_COMMENT = r'/\*(.|\n)*?\*/'
+
+    # Ignora espacios, comentarios y tabuladores
+    t_ignore = ' \t\v'                      
+    t_ignore_COMMENT = r'/\*(.|\n)*?\*/'   
 
     def t_ID(self, t):
         r'[a-zA-z_]\w*'
-        print(t.value)
+        # si es una palabra reservada, asignar token IT o TD
         if t.value in reserved:
             if t.value == 'while':
                 t.type = 'IT1'
@@ -93,55 +106,71 @@ class JavaLexer(object):
 
     def t_newline(self, t):
         r'\n+'
-        t.lexer.lineno += t.value.count("\n")
+        # contador de saltos de linea
+        t.lexer.lineno += t.value.count("\n") 
 
     def t_comment(self, t):
         r'\//.*'
         pass
 
     def t_error(self, t):
+        # por cada error lexico
+        # aumentar contador de errores
         line = t.lexer.lineno
-        desc = "Character %s not recognized at line %d" % (t.value[0], line)
         self.error_count += 1
         t.type = 'LXERR' + str(self.error_count)
         t.value = t.value[0]
-        t.lexer.skip(1)
-        # self.errors.append({
-        #     'line': t.lineno,
-        #     'type': t.type,
-        #     'value': t.value,
-        #     'pos': t.lexpos
-        # })
+        t.lexer.skip(1) # saltar este token
         return t
 
-    # Build the lexer
     def __init__(self, **kwargs):
+        '''
+        Este método inicializa el Lexer
+        '''
+        # contadores de tokens multiples
         for t in multiple_tok:
             self.counters[t] = 0
+
+        # inicilizar los errores en vacio
         self.errors = list()
         self.lexer = lex.lex(module=self, **kwargs)
 
     def tokenizer(self, data):
-        self.lexer.input(data)
+        '''
+        Params:
+        
+            data: Un código fuente como string
+        '''
+        # Archivo de tokens, tabla de simbolos y tokens duplicados
         tokenFile = list()
         seen = set()
         simtable = list()
+
+        # Abrir archivos TXT y CSV
         stfile = open("output/simtable.csv", "w+")
         ftok = open("output/tokensfile.txt", "w+")
         stwriter = csv.writer(stfile)
         stwriter.writerow(["LEX", "TOKEN"])
 
+        self.lexer.input(data)
+
         while True:
+            # mientras haya tokens
             token = self.lexer.token()
             if not token:
                 break
+            
             if token.value not in seen:
+                # si el tokens no esta duplicado
                 seen.add(token.value)
                 if token.type in multiple_tok:
+                    # si es token multiple
+                    # aumentar su contador
                     self.counters[token.type] += 1
                     token.type += str(self.counters[token.type])
                     self.names[token.value] = token.type
-        
+
+                # escribirlo en el archivo CSV y agregarlo a lista de tokens únicos
                 stwriter.writerow([token.value, token.type])
                 simtable.append({
                     'line': token.lineno,
@@ -150,6 +179,7 @@ class JavaLexer(object):
                     'pos': token.lexpos
                 })
             elif token.type in multiple_tok:
+                # si esta repetido asignar el token existente
                 token.type = self.names[token.value]
 
             tokenFile.append({
