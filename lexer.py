@@ -182,16 +182,20 @@ class JavaLexer(object):
                 # si esta repetido asignar el token existente
                 token.type = self.names[token.value]
 
+            # agregarlo a lista de tokens
             tokenFile.append({
                 'line': token.lineno,
                 'type': token.type,
                 'value': token.value,
                 'pos': token.lexpos
             })
+            # escribir un salto de linea o espacio en el archivo
             if token.type == 'SEP1':
                 ftok.write(token.type + '\n')
             else:
                 ftok.write(token.type + ' ')
+        
+        # cerrar buffers
         stfile.close()
         ftok.close()
         return tokenFile, simtable
