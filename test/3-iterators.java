@@ -1,9 +1,9 @@
 /* Programa de ejemplo */
 //	BUCLES Y FUNCIONES
-float sum(int b, float c) {
-    float a = 24 + 3 - 1.5;
-    a = b + d;
+while (a >= b) {
+    float c = 1;
 }
-while (1) {
-    float c = a + b - c;
+
+while (a != b) {
+    float c = 1;
 }
