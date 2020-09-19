@@ -1,0 +1,10 @@
+LEX,TOKEN
+float,TD3
+a,ID1
+=,AS1
+$,LXERR1
+1.5,CNE1
++,OPAR1
+3.0,CNE2
+-,OPAR2
+;,SEP1

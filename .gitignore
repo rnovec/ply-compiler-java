@@ -127,5 +127,4 @@ dmypy.json
 # my stuff
 parsetab.py
 parser.out
-output/
 lextab.py
