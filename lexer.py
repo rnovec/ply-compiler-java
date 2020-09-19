@@ -1,7 +1,7 @@
 #-----------------------
+# lexer.py
 #
 # Análisis Léxico
-#
 #-----------------------
 import ply.lex as lex
 import sys

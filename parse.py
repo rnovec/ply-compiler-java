@@ -1,15 +1,11 @@
 # -----------------------------------------------------------------------------
-# calc.py
+# parser.py
 #
-# A simple calculator with variables.
+# Analizador sintáctico y semántico 
 # -----------------------------------------------------------------------------
 import ply.yacc as yacc
 import sys
 from lexer import JavaLexer
-
-
-""" 1 : SENTENCIAS RECURSIVAS """
-
 
 class JavaParser(object):
 
@@ -24,6 +20,9 @@ class JavaParser(object):
     tokens = JavaLexer.tokens
     errsemcount = 0
     errsint = 0
+
+
+    """ 1 : SENTENCIAS RECURSIVAS """
 
     def p_statement(self, p):
         '''S : sentences S

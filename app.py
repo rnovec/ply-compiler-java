@@ -9,7 +9,7 @@ CORS(app)
 
 
 @app.route('/compile', methods=['POST'])
-def tokenize():
+def compile():
     # data = request.form['program'] # for 'multipart/form-data'
     data = request.get_json(force=False, silent=False, cache=True)
     program = data['program']
