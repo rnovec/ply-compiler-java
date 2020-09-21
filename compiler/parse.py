@@ -46,7 +46,7 @@ class JavaParser(object):
         pass
 
     def p_iterators(self, p):
-        'sentences : iterator'
+        'sentences : iterators'
         pass
 
 
