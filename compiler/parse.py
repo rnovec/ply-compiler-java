@@ -45,7 +45,14 @@ class JavaParser(object):
         'sentences : function'
         pass
 
+    def p_iterators(self, p):
+        'sentences : iterator'
+        pass
+
+
     """ 2 : DECLARACIONES  """
+
+
 
     def p_var_declarations(self, p):
         '''declarations : types ID AS1 expression'''
@@ -74,7 +81,7 @@ class JavaParser(object):
             'line': p.lineno(1),
             'value': p[1],
             'desc': "Type error",
-            'type': f"ERRLXTD",
+            'type': "ERRLXTD",
             'pos': p.lexpos(1)
         })
 
@@ -181,8 +188,45 @@ class JavaParser(object):
                 | TD5'''
         p[0] = p[1]
 
+    """ 4 : SECUENCIAS ITERATIVAS"""
 
-    """ 4 : ERRORES  """
+    def p_WhileStmt(self, p):
+        'iterators : IT1 DEL1 expr DEL2 DEL3 S DEL4'
+        print(p[1])
+
+    def p_expr(self, p):
+        '''expr : expr_rec'''
+        pass
+
+    def p_expr_rec(self, p):
+        '''expr_rec : val relational val
+                    | val logical val
+                    | val logical expr_rec
+                    | val relational expr_rec
+                    | val'''
+        pass
+
+    def p_val(self, p):
+        '''val : ID
+               | CNE'''
+        p[0] = p[1]
+
+    def p_relational(self, p):
+        '''relational : OPRE1
+                | OPRE2
+                | OPRE3
+                | OPRE4
+                | OPRE5
+                | OPRE6'''
+        p[0] = p[1]
+    
+    def p_logical(self, p):
+        '''logical : OPLO1
+                | OPLO2
+                | OPLO3'''
+        p[0] = p[1]
+
+    """ 5 : ERRORES  """
 
     def p_error(self, p):
         print(f"Unexpected token '{p.value}'")

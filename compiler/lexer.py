@@ -24,7 +24,6 @@ multiple_tok = (
     'CNE'
 )
 
-
 class JavaLexer(object):
     '''
     Clase para el analisis lexico
@@ -41,15 +40,15 @@ class JavaLexer(object):
         'OPAR3',
         'OPAR4',
         'OPAR5',
-        # 'OPRE1',
-        # 'OPRE2',
-        # 'OPRE3',
-        # 'OPRE4',
-        # 'OPRE5',
-        # 'OPRE6',
-        # 'OPLO1',
-        # 'OPLO2',
-        # 'OPLO3',
+        'OPRE1',
+        'OPRE2',
+        'OPRE3',
+        'OPRE4',
+        'OPRE5',
+        'OPRE6',
+        'OPLO1',
+        'OPLO2',
+        'OPLO3',
         'AS1',
         'DEL1',
         'DEL2',
@@ -75,17 +74,18 @@ class JavaLexer(object):
     t_OPAR5 = r'\%'
 
     # Operadores Relacionales
-    # t_OPRE1 = r'>='
-    # t_OPRE2 = r'<='
-    # t_OPRE3 = r'=='
-    # t_OPRE4 = r'!='
-    # t_OPRE5 = r'<'
-    # t_OPRE6 = r'>'
+    t_OPRE1 = r'>='
+    t_OPRE2 = r'<='
+    t_OPRE3 = r'=='
+    t_OPRE4 = r'!='
+    t_OPRE5 = r'<'
+    t_OPRE6 = r'>'
 
-    # Operadores Logicos
-    # t_OPLO1 = r'&&'
-    # t_OPLO2 = r'(\|\|)'
-    # t_OPLO3 = r'!'
+    #Operadores Logicos
+
+    t_OPLO1 = r'&&'
+    t_OPLO2 = r'(\|\|)'
+    #t_OPLO3 = r'!'
 
     t_AS1 = r'='
 
@@ -126,6 +126,7 @@ class JavaLexer(object):
     def t_comment(self, t):
         r'\//.*'
         pass
+    
 
     def t_error(self, t):
         # por cada error lexico
@@ -167,7 +168,7 @@ class JavaLexer(object):
         stwriter.writerow(["LEX", "TOKEN"])
 
         self.lexer.input(data)
-
+        #Buffer    
         while True:
             # mientras haya tokens
             token = self.lexer.token()
