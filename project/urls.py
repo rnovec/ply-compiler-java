@@ -18,7 +18,7 @@ from django.urls import path
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from compiler.lexer import JavaLexer
-from compiler.parse import JavaParser
+from compiler.parser import JavaParser
 import re
 import json
 

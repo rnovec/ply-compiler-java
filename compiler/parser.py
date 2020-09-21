@@ -132,6 +132,7 @@ class JavaParser(object):
     def p_expression_name_assign(self, p):
         'expression : ID AS1 expression'
         try:
+            print(self.names[p[1]]['value'])
             self.names[p[1]]['value'] = p[3]
         except LookupError:
             print(f"Undefined name {p[1]!r}")
