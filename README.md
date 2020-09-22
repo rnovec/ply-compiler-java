@@ -2,8 +2,16 @@
 
 ### Entorno virtual
 
+#### Linux
+
     virtualenv venv --python=python3
     source venv/bin/activate
+    pip install -r requirements.txt
+
+#### Windows
+
+    virtualenv venv --python=python3
+    .\venv\Scripts\activate
     pip install -r requirements.txt
 
 ## Run Server
@@ -12,45 +20,64 @@
 
 ## Programmatly
 
-    python parse.py test/1-vars.java
-    python parse.py test/2-functions.java
-    python parse.py test/3-iterators.java
+    python compiler/parse.py test/1-vars.java
+    python compiler/parse.py test/2-functions.java
+    python compiler/parse.py test/3-iterators.java
 
 # Gramaticas
 
 ```
 Grammar
 
-Regla 0 S' -> S
-Regla 1 S -> sentences S
-Regla 2 S -> sentences SEP1 S
-Regla 3 S -> sentences
-Regla 4 sentences -> declarations SEP1
-Regla 5 sentences -> expression SEP1
-Regla 6 sentences -> function
-Regla 7 declarations -> types ID AS1 expression
-Regla 8 declarations -> ID ID AS1 expression
-Regla 9 expression -> expression OPAR1 expression
-Regla 10 expression -> expression OPAR2 expression
-Regla 11 expression -> expression OPAR3 expression
-Regla 12 expression -> expression OPAR4 expression
-Regla 13 expression -> expression OPAR5 expression
-Regla 14 expression -> DEL1 expression DEL2
-Regla 15 expression -> CNE
-Regla 16 expression -> <empty>
-Regla 17 expression -> ID
-Regla 18 expression -> ID AS1 expression
-Regla 19 function -> types ID DEL1 argv DEL2 DEL3 S DEL4
-Regla 20 function -> ID ID DEL1 argv DEL2 DEL3 S DEL4
-Regla 21 argv -> argv_rec
-Regla 22 argv -> <empty>
-Regla 23 argv_rec -> types ID SEP2 argv_rec
-Regla 24 argv_rec -> types ID
-Regla 25 types -> TD1
-Regla 26 types -> TD2
-Regla 27 types -> TD3
-Regla 28 types -> TD4
-Regla 29 types -> TD5
+ S' -> S
+ S -> sentences S
+ S -> sentences SEP1 S
+ S -> sentences
+ sentences -> declarations SEP1
+ sentences -> expression SEP1
+ sentences -> function
+ sentences -> iterators
+ declarations -> types ID AS1 expression
+ declarations -> ID ID AS1 expression
+expression -> expression OPAR1 expression
+expression -> expression OPAR2 expression
+expression -> expression OPAR3 expression
+expression -> expression OPAR4 expression
+expression -> expression OPAR5 expression
+expression -> DEL1 expression DEL2
+expression -> CNE
+expression -> <empty>
+expression -> ID
+expression -> ID AS1 expression
+function -> types ID DEL1 argv DEL2 DEL3 S DEL4
+function -> ID ID DEL1 argv DEL2 DEL3 S DEL4
+argv -> argv_rec
+argv -> <empty>
+argv_rec -> types ID SEP2 argv_rec
+argv_rec -> types ID
+types -> TD1
+types -> TD2
+types -> TD3
+types -> TD4
+types -> TD5
+iterators -> IT1 DEL1 expr DEL2 DEL3 S DEL4
+expr -> expr_rec
+expr_rec -> val relational val
+expr_rec -> val logical val
+expr_rec -> val logical expr_rec
+expr_rec -> val relational expr_rec
+expr_rec -> val
+val -> ID
+val -> CNE
+relational -> OPRE1
+relational -> OPRE2
+relational -> OPRE3
+relational -> OPRE4
+relational -> OPRE5
+relational -> OPRE6
+logical -> OPLO1
+logical -> OPLO2
+logical -> OPLO3
 
 ```
 

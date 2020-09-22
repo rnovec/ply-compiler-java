@@ -5,7 +5,7 @@
 # -----------------------------------------------------------------------------
 import ply.yacc as yacc
 import sys
-from compiler.lexer import JavaLexer
+from .lexer import JavaLexer
 
 class JavaParser(object):
 
@@ -51,8 +51,6 @@ class JavaParser(object):
 
 
     """ 2 : DECLARACIONES  """
-
-
 
     def p_var_declarations(self, p):
         '''declarations : types ID AS1 expression'''
@@ -191,8 +189,8 @@ class JavaParser(object):
 
     """ 4 : SECUENCIAS ITERATIVAS"""
 
-    def p_WhileStmt(self, p):
-        'iterators : IT1 DEL1 expr DEL2 DEL3 S DEL4'
+    def p_while(self, p):
+        '''iterators : IT1 DEL1 expr DEL2 DEL3 S DEL4'''
         print(p[1])
 
     def p_expr(self, p):

@@ -100,7 +100,7 @@ class JavaLexer(object):
     t_SEP2 = r','
 
     # Ignora espacios, comentarios y tabuladores
-    t_ignore = ' \t\v'                      
+    t_ignore = ' \t\v\r'                      
     t_ignore_COMMENT = r'/\*(.|\n)*?\*/'   
 
     def t_ID(self, t):
@@ -157,7 +157,7 @@ class JavaLexer(object):
             data: Un código fuente como string
         '''
         # Archivo de tokens, tabla de simbolos y tokens duplicados
-        tokenFile = list()
+        tokenFile = ''
         seen = set()
         simtable = list()
 
@@ -197,17 +197,12 @@ class JavaLexer(object):
                 # si esta repetido asignar el token existente
                 token.type = self.names[token.value]
 
-            # agregarlo a lista de tokens
-            tokenFile.append({
-                'line': token.lineno,
-                'type': token.type,
-                'value': token.value,
-                'pos': token.lexpos
-            })
             # escribir un salto de linea o espacio en el archivo
             if token.type == 'SEP1':
+                tokenFile += token.type + '\n'
                 ftok.write(token.type + '\n')
             else:
+                tokenFile += token.type + ' '
                 ftok.write(token.type + ' ')
         
         # cerrar buffers
