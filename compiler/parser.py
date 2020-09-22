@@ -132,7 +132,7 @@ class JavaParser(object):
     def p_expression_name_assign(self, p):
         'expression : ID AS1 expression'
         try:
-            print(self.names[p[1]]['value'])
+            print(self.names[p[1]])
             self.names[p[1]]['value'] = p[3]
         except LookupError:
             print(f"Undefined name {p[1]!r}")
@@ -154,7 +154,6 @@ class JavaParser(object):
 
     def p_function_error(self, p):
         'function : ID ID DEL1 argv DEL2 DEL3 S DEL4'
-        print(p[1], p[2])
         self.functions[p[2]] = 0
 
     def p_argv(self, p):
@@ -208,7 +207,24 @@ class JavaParser(object):
     def p_val(self, p):
         '''val : ID
                | CNE'''
-        p[0] = p[1]
+        try:
+            p[0] = float(p[1])
+        except ValueError:
+            try:
+                print(self.names[p[1]]['value'])
+                p[0] = self.names[p[1]]['value']
+            except LookupError:
+                print(f"Undefined name {p[1]!r}")
+                self.errsemcount += 1
+                self.semerrors.append({
+                    'line': p.lineno(1),
+                    'value': p[1],
+                    'desc': "Undefined name",
+                    'type': f"ERRSEM{self.errsemcount}",
+                    'pos': p.lexpos(1)
+                })
+                p[0] = 0
+              
 
     def p_relational(self, p):
         '''relational : OPRE1
