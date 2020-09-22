@@ -28,15 +28,15 @@ def compile(request):
     program = json_data['program']
     JL = JavaLexer()
     JP = JavaParser()
-    tokensFile, simbolTable = JL.tokenizer(program)
+    tokensFile, simbolTable, lexerr = JL.tokenizer(program)
     errors, names = JP.compile(program)
     for t in simbolTable:
         if re.match(r'ID', t['type']):
             try:
                 t['vartype'] = names[t['value']]['vartype']
             except Exception as err:
-                print(err)
-    return JsonResponse({'simbolTable': simbolTable, 'tokensFile': tokensFile, 'errors': errors})
+                pass
+    return JsonResponse({'simbolTable': simbolTable, 'tokensFile': tokensFile, 'errors': lexerr + errors})
 
 urlpatterns = [
     path('compile', compile),

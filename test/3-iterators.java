@@ -1,6 +1,6 @@
 /* Programa de ejemplo */
 //	BUCLES Y FUNCIONES
-while (a >= b) {
+while () {
     float c = 1;
 }
 

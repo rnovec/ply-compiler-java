@@ -133,8 +133,15 @@ class JavaLexer(object):
         # aumentar contador de errores
         line = t.lexer.lineno
         self.error_count += 1
-        t.type = 'LXERR' + str(self.error_count)
+        t.type = 'ERRLX' + str(self.error_count)
         t.value = t.value[0]
+        self.errors.append({
+                'line': line,
+                'value': t.value,
+                'type': t.type,
+                'desc': "Unexpected token",
+                'pos': t.lexpos
+            })
         t.lexer.skip(1) # saltar este token
         return t
 
@@ -198,17 +205,16 @@ class JavaLexer(object):
                 token.type = self.names[token.value]
 
             # escribir un salto de linea o espacio en el archivo
-            if token.type == 'SEP1':
+            if token.type in ['SEP1', 'DEL3', 'DEL4']:
                 tokenFile += token.type + '\n'
                 ftok.write(token.type + '\n')
             else:
                 tokenFile += token.type + ' '
                 ftok.write(token.type + ' ')
-        
         # cerrar buffers
         stfile.close()
         ftok.close()
-        return tokenFile, simtable
+        return tokenFile, simtable, self.errors
 
 
 # MAIN
