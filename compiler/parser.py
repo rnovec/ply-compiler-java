@@ -13,10 +13,9 @@ class JavaParser(object):
     # Precedence rules for the arithmetic operators
     precedence = ()
 
-    # dictionary of names (for storing variables)
+    # for storing variables
     names = {}
     functions = {}
-    vars = list()
     semerrors = list()
     errors = dict()
     tokens = JavaLexer.tokens
@@ -66,12 +65,7 @@ class JavaParser(object):
             value = bool(p[4])
         elif p[1] == 'char':
             value = str(p[4])
-        self.names[p[2]] = {
-            'value': value,
-            'vartype': p[1],
-            'line': p.lineno(2),
-            'pos': p.lexpos(2)
-        }
+        self.add_var(p, 2, p[1], value)
         p[0] = p[4]
 
     def p_var_declarations_error(self, p):
@@ -91,14 +85,24 @@ class JavaParser(object):
                     | expression OPAR3 expression
                     | expression OPAR4 expression
                     | expression OPAR5 expression'''
-        if p[2] == '+':
-            p[0] = p[1] + p[3]
-        elif p[2] == '-':
-            p[0] = p[1] - p[3]
-        elif p[2] == '*':
-            p[0] = p[1] * p[3]
-        elif p[2] == '/':
-            p[0] = p[1] / p[3]
+        if type(p[1]) == type(p[3]):
+            p[0] = self.calc(p[2], p[1], p[3])
+        elif type(p[1]) == 'dict':
+            print(p[1], p[3])
+        elif type(p[2]) == 'dict':
+            print(p[1], p[3])
+
+    def calc(self, op, val1, val2):
+        val = None
+        if op == '+':
+            val = val1 + val2
+        elif op == '-':
+            val = val1 - val2
+        elif op == '*':
+            val = val1 * val2
+        elif op == '/':
+            val = val1 / val2
+        return val
 
     def p_expression_group(self, p):
         'expression : DEL1 expression DEL2'
@@ -108,43 +112,17 @@ class JavaParser(object):
         'expression : CNE'
         p[0] = p[1]
 
-    def p_expression_empty(self, p):
-        'expression : '
-        pass
+    # def p_expression_empty(self, p):
+    #     'expression : '
+    #     pass
 
     def p_expression_name(self, p):
         'expression : ID'
-        try:
-            print(self.names[p[1]]['value'])
-            p[0] = self.names[p[1]]['value']
-        except LookupError:
-            print(f"Undefined name {p[1]!r}")
-            self.errsemcount += 1
-            self.semerrors.append({
-                'line': p.lineno(1),
-                'value': p[1],
-                'desc': "Undefined name",
-                'type': f"ERRSEM{self.errsemcount}",
-                'pos': p.lexpos(1)
-            })
-            p[0] = 0
+        p[0] = self.existing_var(p)
 
     def p_expression_name_assign(self, p):
         'expression : ID AS1 expression'
-        try:
-            print(self.names[p[1]])
-            self.names[p[1]]['value'] = p[3]
-        except LookupError:
-            print(f"Undefined name {p[1]!r}")
-            self.errsemcount += 1
-            self.semerrors.append({
-                'line': p.lineno(1),
-                'value': p[1],
-                'desc': "Undefined name",
-                'type': f"ERRSEM{self.errsemcount}",
-                'pos': p.lexpos(1)
-            })
-            p[0] = 0
+        p[0] = self.existing_var(p)
 
     """ 3 : FUNCIONES  """
 
@@ -173,12 +151,7 @@ class JavaParser(object):
             value = False
         elif p[1] == 'char':
             value = ''
-        self.names[p[2]] = {
-            'value': value,
-            'vartype': p[1],
-            'line': p.lineno(2),
-            'pos': p.lexpos(2)
-        }
+        self.add_var(p, 2, p[1], value)
 
     def p_types(self, p):
         '''types : TD1
@@ -188,7 +161,7 @@ class JavaParser(object):
                 | TD5'''
         p[0] = p[1]
 
-    """ 4 : SECUENCIAS ITERATIVAS"""
+    """ 4 : ITERADORES """
 
     def p_while(self, p):
         '''iterators : IT1 DEL1 expr DEL2 DEL3 S DEL4'''
@@ -208,22 +181,10 @@ class JavaParser(object):
         '''val : ID
                | CNE'''
         try:
+            print(float(p[1]))
             p[0] = float(p[1])
         except ValueError:
-            try:
-                print(self.names[p[1]]['value'])
-                p[0] = self.names[p[1]]['value']
-            except LookupError:
-                print(f"Undefined name {p[1]!r}")
-                self.errsemcount += 1
-                self.semerrors.append({
-                    'line': p.lineno(1),
-                    'value': p[1],
-                    'desc': "Undefined name",
-                    'type': f"ERRSEM{self.errsemcount}",
-                    'pos': p.lexpos(1)
-                })
-                p[0] = 0
+            p[0] = self.existing_var(p)
               
 
     def p_relational(self, p):
@@ -257,9 +218,12 @@ class JavaParser(object):
         pass
 
     def __init__(self):
-        self.errors = dict()
+        self.names = {}
+        self.functions = {}
         self.semerrors = list()
+        self.errors = dict()
         self.errsemcount = 0
+        self.errsint = 0
         self.lexer = JavaLexer()
         self.parser = yacc.yacc(module=self)
 
@@ -267,6 +231,35 @@ class JavaParser(object):
         self.parser.parse(program)
         self.semerrors += self.errors.values()
         return self.semerrors, self.names
+
+    def existing_var(self, p):
+        try:
+            print(self.names[p[1]]['value'])
+            return self.names[p[1]]
+        except LookupError:
+            print(f"Undefined name {p[1]!r}")
+            self.errsemcount += 1
+            self.add_sem_err(p, 1)
+            return 0
+    
+    def add_sem_err(self, p, index):
+        self.errsemcount += 1
+        self.semerrors.append({
+            'line': p.lineno(index),
+            'value': p[index],
+            'desc': "Undefined name",
+            'type': f"ERRSEM{self.errsemcount}",
+            'pos': p.lexpos(index)
+        })
+
+    def add_var(self, p, index, type, value):
+        self.names[p[index]] = {
+            'value': value,
+            'vartype': type,
+            'line': p.lineno(index),
+            'pos': p.lexpos(index)
+        }
+        
 
 
 # MAIN
@@ -280,7 +273,7 @@ if __name__ == "__main__":
     except IndexError:
         while True:
             try:
-                s = input('calc > ')
+                s = input('pyjava > ')
             except EOFError:
                 break
             JavaParser().parser.parse(s)
