@@ -55,22 +55,27 @@ class JavaParser(object):
 
     def p_var_declarations(self, p):
         '''declarations : types ID AS1 expression'''
-        print(p[4])
-        value = None
-        if p[1] == 'float':
-            value = float(p[4])
-        elif p[1] == 'int':
-            value = int(p[4])
-        elif p[1] == 'bool':
-            value = bool(p[4])
-        elif p[1] == 'char':
-            value = str(p[4])
-        self.add_var(p, 2, p[1], value)
-        p[0] = p[4]
+        try:
+            value = None
+            if p[1] == 'float' and type(p[4]) == float:
+                value = float(p[4])
+            elif p[1] == 'int' and type(p[4]) == int:
+                value = int(p[4])
+            elif p[1] == 'bool':
+                value = bool(p[4])
+            elif p[1] == 'string':
+                value = str(p[4])
+            else: raise TypeError
+            self.add_var(p, 2, p[1], value)
+            p[0] = p[4]
+        except TypeError:
+            print(p[1], p[2], type(p[4]))
+            self.type_err(p, 2)
+            p[0] = 0
+            
 
     def p_var_declarations_error(self, p):
         '''declarations : ID ID AS1 expression'''
-        print('Tipo:', p[1])
         self.errors[p[1]] = {
             'line': p.lineno(1),
             'value': p[1],
@@ -85,12 +90,13 @@ class JavaParser(object):
                     | expression OPAR3 expression
                     | expression OPAR4 expression
                     | expression OPAR5 expression'''
-        if type(p[1]) == type(p[3]):
+        print('Line', p.lineno(2))
+        try:
             p[0] = self.calc(p[2], p[1], p[3])
-        elif type(p[1]) == 'dict':
-            print(p[1], p[3])
-        elif type(p[2]) == 'dict':
-            print(p[1], p[3])
+        except TypeError:
+            self.type_err(p, 2)
+            p[0] = 0
+        
 
     def calc(self, op, val1, val2):
         val = None
@@ -149,7 +155,7 @@ class JavaParser(object):
             value = 0
         elif p[1] == 'bool':
             value = False
-        elif p[1] == 'char':
+        elif p[1] == 'string':
             value = ''
         self.add_var(p, 2, p[1], value)
 
@@ -207,7 +213,7 @@ class JavaParser(object):
     def p_error(self, p):
         self.errsint += 1
         if not re.match(r'ERRLX', p.type):
-            print(f"Unexpected token '{p.value}'")
+            # print(f"Unexpected token '{p.value}'")
             self.errors[p.value] = {
                 'line': p.lineno,
                 'value': p.value,
@@ -235,14 +241,23 @@ class JavaParser(object):
     def existing_var(self, p):
         try:
             print(self.names[p[1]]['value'])
-            return self.names[p[1]]
+            return self.names[p[1]]['value']
         except LookupError:
-            print(f"Undefined name {p[1]!r}")
-            self.errsemcount += 1
-            self.add_sem_err(p, 1)
+            # print(f"Undefined name {p[1]!r}")
+            self.undef_name_err(p, 1)
             return 0
+
+    def type_err(self, p, index):
+        self.errsemcount += 1
+        self.semerrors.append({
+            'line': p.lineno(index),
+            'value': p[index],
+            'desc': "Types doesn't match",
+            'type': f"ERRSEM{self.errsemcount}",
+            'pos': p.lexpos(index)
+        })
     
-    def add_sem_err(self, p, index):
+    def undef_name_err(self, p, index):
         self.errsemcount += 1
         self.semerrors.append({
             'line': p.lineno(index),
