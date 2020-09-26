@@ -6,4 +6,4 @@ void hello8(string a, float b) {
     while (1) {
         float c = a + b - c;
     }
-};
+}

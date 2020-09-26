@@ -29,16 +29,16 @@
 ```
 Grammar
 
- S' -> S
- S -> sentences S
- S -> sentences SEP1 S
- S -> sentences
- sentences -> declarations SEP1
- sentences -> expression SEP1
- sentences -> function
- sentences -> iterators
- declarations -> types ID AS1 expression
- declarations -> ID ID AS1 expression
+S' -> S
+S -> sentences S
+S -> sentences SEP1 S
+S -> sentences
+sentences -> declarations SEP1
+sentences -> expression SEP1
+sentences -> function
+sentences -> iterators
+declarations -> types ID AS1 expression
+declarations -> ID ID AS1 expression
 expression -> expression OPAR1 expression
 expression -> expression OPAR2 expression
 expression -> expression OPAR3 expression
@@ -46,7 +46,6 @@ expression -> expression OPAR4 expression
 expression -> expression OPAR5 expression
 expression -> DEL1 expression DEL2
 expression -> CNE
-expression -> <empty>
 expression -> ID
 expression -> ID AS1 expression
 function -> types ID DEL1 argv DEL2 DEL3 S DEL4
@@ -62,8 +61,6 @@ types -> TD4
 types -> TD5
 iterators -> IT1 DEL1 expr DEL2 DEL3 S DEL4
 expr -> expr_rec
-expr_rec -> val relational val
-expr_rec -> val logical val
 expr_rec -> val logical expr_rec
 expr_rec -> val relational expr_rec
 expr_rec -> val
@@ -78,7 +75,6 @@ relational -> OPRE6
 logical -> OPLO1
 logical -> OPLO2
 logical -> OPLO3
-
 ```
 
 ## Algoritmo

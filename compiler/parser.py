@@ -22,34 +22,20 @@ class JavaParser(object):
     errsemcount = 0
     errsint = 0
 
-
     """ 1 : SENTENCIAS RECURSIVAS """
 
     def p_statement(self, p):
         '''S : sentences S
-            | sentences SEP1 S'''
+            | sentences SEP1 S
+            | sentences'''
         pass
 
     def p_sentences(self, p):
-        'S : sentences'
+        '''sentences : declarations SEP1
+            | expression SEP1
+            | function
+            | iterators'''
         pass
-
-    def p_declarations(self, p):
-        'sentences : declarations SEP1'
-        pass
-
-    def p_expressions(self, p):
-        'sentences : expression SEP1'
-        pass
-
-    def p_functions(self, p):
-        'sentences : function'
-        pass
-
-    def p_iterators(self, p):
-        'sentences : iterators'
-        pass
-
 
     """ 2 : DECLARACIONES  """
 
@@ -117,10 +103,6 @@ class JavaParser(object):
     def p_expression_number(self, p):
         'expression : CNE'
         p[0] = p[1]
-
-    # def p_expression_empty(self, p):
-    #     'expression : '
-    #     pass
 
     def p_expression_name(self, p):
         'expression : ID'
@@ -238,13 +220,13 @@ class JavaParser(object):
         self.semerrors += self.errors.values()
         return self.semerrors, self.names
 
-    def existing_var(self, p):
+    def existing_var(self, var):
         try:
-            print(self.names[p[1]]['value'])
-            return self.names[p[1]]['value']
+            print(self.names[var[1]]['value'])
+            return self.names[var[1]]['value']
         except LookupError:
             # print(f"Undefined name {p[1]!r}")
-            self.undef_name_err(p, 1)
+            self.undef_name_err(var, 1)
             return 0
 
     def type_err(self, p, index):
@@ -257,26 +239,24 @@ class JavaParser(object):
             'pos': p.lexpos(index)
         })
     
-    def undef_name_err(self, p, index):
+    def undef_name_err(self, name, index):
         self.errsemcount += 1
         self.semerrors.append({
-            'line': p.lineno(index),
-            'value': p[index],
+            'line': name.lineno(index),
+            'value': name[index],
             'desc': "Undefined name",
             'type': f"ERRSEM{self.errsemcount}",
-            'pos': p.lexpos(index)
+            'pos': name.lexpos(index)
         })
 
-    def add_var(self, p, index, type, value):
-        self.names[p[index]] = {
+    def add_var(self, name, index, type, value):
+        self.names[name[index]] = {
             'value': value,
             'vartype': type,
-            'line': p.lineno(index),
-            'pos': p.lexpos(index)
+            'line': name.lineno(index),
+            'pos': name.lexpos(index)
         }
         
-
-
 # MAIN
 if __name__ == "__main__":
     try:
