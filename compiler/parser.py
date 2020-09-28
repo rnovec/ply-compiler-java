@@ -19,7 +19,6 @@ class JavaParser(object):
     semerrors = list()
     errors = dict()
     tokens = JavaLexer.tokens
-    errsemcount = 0
     errsint = 0
 
     """ 1 : SENTENCIAS RECURSIVAS """
@@ -58,7 +57,7 @@ class JavaParser(object):
             print(p[1], p[2], type(p[4]))
             self.type_err(p, 2)
             p[0] = 0
-            
+                
 
     def p_var_declarations_error(self, p):
         '''declarations : ID ID AS1 expression'''
@@ -67,7 +66,7 @@ class JavaParser(object):
             'value': p[1],
             'desc': "Type error",
             'type': "ERRLXTD",
-            'pos': p.lexpos(1)
+            # 'pos': p.lexpos(1)
         }
 
     def p_expression_binop(self, p):
@@ -110,7 +109,24 @@ class JavaParser(object):
 
     def p_expression_name_assign(self, p):
         'expression : ID AS1 expression'
-        p[0] = self.existing_var(p)
+        try:
+            value = None
+            var = self.existing_var(p)
+            if var['vartype'] == 'float' and type(p[3]) == float:
+                value = float(p[3])
+            elif var['vartype'] == 'int' and type(p[3]) == int:
+                value = int(p[3])
+            elif var['vartype'] == 'bool':
+                value = bool(p[3])
+            elif var['vartype'] == 'string':
+                value = str(p[3])
+            else: raise TypeError
+            self.add_var(p, 1, var, value)
+            p[0] = p[4]
+        except TypeError:
+            print(p[1], p[2], type(p[3]))
+            self.type_err(p, 1)
+            p[0] = 0
 
     """ 3 : FUNCIONES  """
 
@@ -201,7 +217,7 @@ class JavaParser(object):
                 'value': p.value,
                 'type': 'ERR' + p.type,
                 'desc': "Unexpected token",
-                'pos': p.lexpos
+                # 'pos': p.lexpos
             }
         pass
 
@@ -210,7 +226,6 @@ class JavaParser(object):
         self.functions = {}
         self.semerrors = list()
         self.errors = dict()
-        self.errsemcount = 0
         self.errsint = 0
         self.lexer = JavaLexer()
         self.parser = yacc.yacc(module=self)
@@ -230,7 +245,6 @@ class JavaParser(object):
             return 0
 
     def type_err(self, p, index):
-        self.errsemcount += 1
         self.semerrors.append({
             'line': p.lineno(index),
             'value': p[index],
@@ -240,13 +254,12 @@ class JavaParser(object):
         })
     
     def undef_name_err(self, name, index):
-        self.errsemcount += 1
         self.semerrors.append({
             'line': name.lineno(index),
             'value': name[index],
             'desc': "Undefined name",
-            'type': f"ERRSEM{self.errsemcount}",
-            'pos': name.lexpos(index)
+            'type': "ERRSEM",
+            # 'pos': name.lexpos(index)
         })
 
     def add_var(self, name, index, type, value):
@@ -254,7 +267,7 @@ class JavaParser(object):
             'value': value,
             'vartype': type,
             'line': name.lineno(index),
-            'pos': name.lexpos(index)
+            # 'pos': name.lexpos(index)
         }
         
 # MAIN
