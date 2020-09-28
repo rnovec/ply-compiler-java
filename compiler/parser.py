@@ -249,7 +249,7 @@ class JavaParser(object):
             'line': p.lineno(index),
             'value': p[index],
             'desc': "Type doesn't match",
-            'type': f"ERRSEM{self.errsemcount}",
+            'type': f"ERRSEM",
             'pos': p.lexpos(index)
         })
     
