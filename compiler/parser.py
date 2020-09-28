@@ -234,7 +234,7 @@ class JavaParser(object):
         self.semerrors.append({
             'line': p.lineno(index),
             'value': p[index],
-            'desc': "Types doesn't match",
+            'desc': "Type doesn't match",
             'type': f"ERRSEM{self.errsemcount}",
             'pos': p.lexpos(index)
         })
