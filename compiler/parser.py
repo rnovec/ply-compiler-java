@@ -79,7 +79,9 @@ class JavaParser(object):
                     | expression OPAR4 expression
                     | expression OPAR5 expression'''
         try:
-            p[0] = self.calc(p[2], p[1], p[3])
+            if not type(p[1]) == type(p[3]): raise TypeError 
+            res = self.calc(p[2], p[1], p[3])
+            p[0] = res
         except TypeError:
             if p[1] is not None and p[3] is not None:
                 self.type_err(p, 2)
