@@ -4,14 +4,13 @@ prueba1,ID1
 (,DEL1
 ),DEL2
 {,DEL3
-int,TD1
 a,ID2
 =,AS1
-2,CNE1
++,OPAR1
+b,ID3
 *,OPAR3
-5,CNE2
+5,CNE1
 ;,SEP1
 while,IT1
 <,OPRE5
-b,ID3
 },DEL4

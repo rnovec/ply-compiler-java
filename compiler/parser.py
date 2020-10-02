@@ -127,13 +127,13 @@ class JavaParser(object):
             elif var['vartype'] == 'string':
                 value = str(p[3])
             else: raise TypeError
+            self.add_var(p, 1, var['vartype'], value)
             p[0] = value
         except TypeError:
             print('Type error', p.lineno(1))
             self.type_err(p, 1)
             p[0] = value
-        finally:
-            self.add_var(p, 1, self.names[p[1]]['vartype'], value)
+            
 
     """ 3 : FUNCIONES  """
 
