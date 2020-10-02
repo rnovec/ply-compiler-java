@@ -20,6 +20,7 @@ class JavaParser(object):
     errors = dict()
     tokens = JavaLexer.tokens
     errsint = 0
+    lastID = str()
 
     """ 1 : SENTENCIAS RECURSIVAS """
 
@@ -40,23 +41,26 @@ class JavaParser(object):
 
     def p_var_declarations(self, p):
         '''declarations : types ID AS1 expression'''
+        value = None
         try:
-            value = None
-            if p[1] == 'float' and type(p[4]) == float:
+            if p[1] == 'float':
                 value = float(p[4])
-            elif p[1] == 'int' and type(p[4]) == int:
+                if not type(p[4]) == float: raise TypeError
+            elif p[1] == 'int':
                 value = int(p[4])
+                if not type(p[4]) == int: raise TypeError
             elif p[1] == 'bool':
                 value = bool(p[4])
             elif p[1] == 'string':
                 value = str(p[4])
             else: raise TypeError
-            self.add_var(p, 2, p[1], value)
-            p[0] = p[4]
+            p[0] = value
         except TypeError:
-            print(p[1], p[2], type(p[4]))
             self.type_err(p, 2)
-            p[0] = 0
+            p[0] = value
+        finally:
+            self.add_var(p, 2, p[1], value)
+            
                 
 
     def p_var_declarations_error(self, p):
@@ -75,10 +79,10 @@ class JavaParser(object):
                     | expression OPAR3 expression
                     | expression OPAR4 expression
                     | expression OPAR5 expression'''
-        print('Line', p.lineno(2))
         try:
             p[0] = self.calc(p[2], p[1], p[3])
-        except TypeError:
+        except TypeError as err:
+            print(err)
             self.type_err(p, 2)
             p[0] = 0
         
@@ -109,24 +113,27 @@ class JavaParser(object):
 
     def p_expression_name_assign(self, p):
         'expression : ID AS1 expression'
+        value = None
         try:
-            value = None
             var = self.existing_var(p)
-            if var['vartype'] == 'float' and type(p[3]) == float:
+            if var['vartype'] == 'float':
                 value = float(p[3])
-            elif var['vartype'] == 'int' and type(p[3]) == int:
+                if not type(p[3]) == float: raise TypeError
+            elif var['vartype'] == 'int':
                 value = int(p[3])
+                if not type(p[3]) == int: raise TypeError
             elif var['vartype'] == 'bool':
                 value = bool(p[3])
             elif var['vartype'] == 'string':
                 value = str(p[3])
             else: raise TypeError
-            self.add_var(p, 1, var, value)
-            p[0] = p[4]
+            p[0] = value
         except TypeError:
-            print(p[1], p[2], type(p[3]))
+            print('Type error', p.lineno(1))
             self.type_err(p, 1)
-            p[0] = 0
+            p[0] = value
+        finally:
+            self.add_var(p, 1, self.names[p[1]]['vartype'], value)
 
     """ 3 : FUNCIONES  """
 
@@ -216,7 +223,7 @@ class JavaParser(object):
                 'line': p.lineno,
                 'value': p.value,
                 'type': 'ERR' + p.type,
-                'desc': "Unexpected token",
+                'desc': "Token inesperado",
                 # 'pos': p.lexpos
             }
         pass
@@ -240,7 +247,6 @@ class JavaParser(object):
             print(self.names[var[1]]['value'])
             return self.names[var[1]]['value']
         except LookupError:
-            # print(f"Undefined name {p[1]!r}")
             self.undef_name_err(var, 1)
             return 0
 
@@ -248,7 +254,7 @@ class JavaParser(object):
         self.semerrors.append({
             'line': p.lineno(index),
             'value': p[index],
-            'desc': "Type doesn't match",
+            'desc': "Tipos incompatibles",
             'type': f"ERRSEM",
             'pos': p.lexpos(index)
         })
@@ -257,7 +263,7 @@ class JavaParser(object):
         self.semerrors.append({
             'line': name.lineno(index),
             'value': name[index],
-            'desc': "Undefined name",
+            'desc': "Nombre indefinido",
             'type': "ERRSEM",
             # 'pos': name.lexpos(index)
         })

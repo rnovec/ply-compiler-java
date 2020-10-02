@@ -142,7 +142,7 @@ class JavaLexer(object):
                 'line': line,
                 'value': t.value,
                 'type': t.type,
-                'desc': "Unexpected token",
+                'desc': "Token inesperado",
                 'pos': t.lexpos
             })
         t.lexer.skip(1) # saltar este token
