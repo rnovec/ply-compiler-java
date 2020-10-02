@@ -1,7 +1,6 @@
 LEX,TOKEN
 void,TD5
 prueba1,ID1
-"""",ERRLX1
 (,DEL1
 ),DEL2
 {,DEL3
@@ -19,6 +18,7 @@ y,ID4
 },DEL4
 int,TD1
 suma,ID5
+@,ERRLX1
 ",",SEP2
 bool,TD2
 c,ID6

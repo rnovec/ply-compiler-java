@@ -7,7 +7,7 @@ void prueba1 ()
     }
 }
 
-int suma@ (int a, int b, boolean c)
+int suma@ (int a, int b, bool c)
 {
     c = a + b;
 }
