@@ -82,8 +82,8 @@ class JavaParser(object):
         try:
             p[0] = self.calc(p[2], p[1], p[3])
         except TypeError as err:
-            print(err)
-            self.type_err(p, 2)
+            if p[1] is not None and p[3] is not None:
+                self.type_err(p, 2)
             p[0] = 0
         
 
@@ -112,7 +112,8 @@ class JavaParser(object):
         p[0] = self.existing_var(p)
 
     def p_expression_name_assign(self, p):
-        'expression : ID AS1 expression'
+        '''expression : ID AS1 expression
+                      | AS1 expression'''
         value = None
         try:
             var = self.existing_var(p)
@@ -130,15 +131,16 @@ class JavaParser(object):
             self.add_var(p, 1, var['vartype'], value)
             p[0] = value
         except TypeError:
-            print('Type error', p.lineno(1))
-            self.type_err(p, 1)
+            if var is not None:
+                self.type_err(p, 1)
             p[0] = value
             
 
     """ 3 : FUNCIONES  """
 
     def p_function(self, p):
-        '''function : types ID DEL1 argv DEL2 DEL3 S DEL4'''
+        '''function : types ID DEL1 argv DEL2 DEL3 S DEL4
+                    | DEL1 argv DEL2 DEL3 S DEL4'''
         self.functions[p[2]] = 0
 
     def p_function_error(self, p):
@@ -248,7 +250,7 @@ class JavaParser(object):
             return self.names[var[1]]['value']
         except LookupError:
             self.undef_name_err(var, 1)
-            return 0
+            return None
 
     def type_err(self, p, index):
         self.semerrors.append({
