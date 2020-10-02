@@ -53,7 +53,6 @@ class JavaParser(object):
                 value = bool(p[4])
             elif p[1] == 'string':
                 value = str(p[4])
-            else: raise TypeError
             p[0] = value
         except TypeError:
             self.type_err(p, 2)
@@ -81,7 +80,7 @@ class JavaParser(object):
                     | expression OPAR5 expression'''
         try:
             p[0] = self.calc(p[2], p[1], p[3])
-        except TypeError as err:
+        except TypeError:
             if p[1] is not None and p[3] is not None:
                 self.type_err(p, 2)
             p[0] = 0
@@ -112,27 +111,25 @@ class JavaParser(object):
         p[0] = self.existing_var(p)
 
     def p_expression_name_assign(self, p):
-        '''expression : ID AS1 expression
-                      | AS1 expression'''
+        '''expression : ID AS1 expression'''
         value = None
         try:
             var = self.existing_var(p)
-            if var['vartype'] == 'float':
+            if type(var) == 'float':
                 value = float(p[3])
                 if not type(p[3]) == float: raise TypeError
-            elif var['vartype'] == 'int':
+            elif type(var) == 'int':
                 value = int(p[3])
                 if not type(p[3]) == int: raise TypeError
-            elif var['vartype'] == 'bool':
+            elif type(var) == 'bool':
                 value = bool(p[3])
-            elif var['vartype'] == 'string':
+            elif type(var) == 'string':
                 value = str(p[3])
-            else: raise TypeError
-            self.add_var(p, 1, var['vartype'], value)
-            p[0] = value
+            #self.add_var(p, 1, type(var), value)
         except TypeError:
             if var is not None:
                 self.type_err(p, 1)
+        finally:
             p[0] = value
             
 
@@ -157,13 +154,13 @@ class JavaParser(object):
                     | types ID'''
         value = None
         if p[1] == 'float':
-            value = 0.0
+            value = float(0)
         elif p[1] == 'int':
-            value = 0
+            value = int(0)
         elif p[1] == 'bool':
-            value = False
+            value = bool(0)
         elif p[1] == 'string':
-            value = ''
+            value = str('')
         self.add_var(p, 2, p[1], value)
 
     def p_types(self, p):
@@ -246,7 +243,6 @@ class JavaParser(object):
 
     def existing_var(self, var):
         try:
-            print(self.names[var[1]]['value'])
             return self.names[var[1]]['value']
         except LookupError:
             self.undef_name_err(var, 1)
