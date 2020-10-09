@@ -51,8 +51,10 @@ class JavaParser(object):
                 if not type(p[4]) == int: raise TypeError
             elif p[1] == 'bool':
                 value = bool(p[4])
+                if not type(p[4]) == bool: raise TypeError
             elif p[1] == 'string':
                 value = str(p[4])
+                if not type(p[4]) == str: raise TypeError
             p[0] = value
         except TypeError:
             self.type_err(p, 2)
