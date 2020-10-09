@@ -125,8 +125,10 @@ class JavaParser(object):
                 if not type(p[3]) == int: raise TypeError
             elif type(var) == 'bool':
                 value = bool(p[3])
+                if not type(p[3]) == bool: raise TypeError
             elif type(var) == 'string':
                 value = str(p[3])
+                if not type(p[3]) == str: raise TypeError
             #self.add_var(p, 1, type(var), value)
         except TypeError:
             if var is not None:
