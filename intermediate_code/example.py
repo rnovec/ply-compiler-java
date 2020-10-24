@@ -7,7 +7,7 @@
 import ply.yacc as yacc
 import sys
 import ply.lex as lex
-from .helpers import three_add_code, infix_to_postfix
+from helpers import flatten, three_add_code, infix_to_postfix
 tokens = (
     'NAME', 'NUMBER',
     'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'EQUALS',
@@ -65,11 +65,11 @@ def p_statement_assign(p):
     names[p[1]] = p[3]
     var = [p[1]]
     assign = [p[2]]
-    postfix = flatten(p[3]) # obtain a flat array of elements
+    infix = flatten(p[3])  # obtain a flat array of elements
+    print(infix)
+    postfix = infix_to_postfix(infix)
     # reverse the list to use as stack
-    print(infix_to_postfix(postfix))
     string = list(reversed(var + postfix + assign))
-    
     print(three_add_code(string))
 
 
