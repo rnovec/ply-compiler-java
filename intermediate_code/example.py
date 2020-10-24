@@ -7,6 +7,7 @@
 import ply.yacc as yacc
 import sys
 import ply.lex as lex
+from .helpers import three_add_code, infix_to_postfix
 tokens = (
     'NAME', 'NUMBER',
     'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'EQUALS',
@@ -48,19 +49,6 @@ def t_error(t):
 # Build the lexer
 lex.lex()
 
-
-def flatten(seq):
-    l = []
-    for elt in seq:
-        t = type(elt)
-        if t is tuple or t is list:
-            for elt2 in flatten(elt):
-                l.append(elt2)
-        else:
-            l.append(elt)
-    return l
-
-
 # Precedence rules for the arithmetic operators
 precedence = (
     ('left', 'PLUS', 'MINUS'),
@@ -79,70 +67,11 @@ def p_statement_assign(p):
     assign = [p[2]]
     postfix = flatten(p[3]) # obtain a flat array of elements
     # reverse the list to use as stack
+    print(infix_to_postfix(postfix))
     string = list(reversed(var + postfix + assign))
-    print(postfix)
+    
     print(three_add_code(string))
 
-def three_add_code(string):
-    """
-    Create a Three Addres Code Table
-    from a inverted postfix array
-    """
-    aux = list() # auxiliar stack
-    taddc = list()  # Three Addres Code (EDD)
-    print(string)
-    i = 0 # counter of iterations
-    el = string.pop() # get the first operand
-    while el and len(string):
-        # Recorrer la expresión hasta encontrar el primer operador
-        if el in ['*', '-', '+', '/']:
-            # Asignar a una variable auxiliar, el operador y los operandos previos
-            # Asignar a una segunda variable auxiliar, el operador y los 2 operandos previos.
-            op1 = aux.pop()
-            op2 = aux.pop()
-
-            # En la primera iteración:
-            if i == 0:
-                # Se agrega un renglón en la triplo : variable temporal, primer operando y la operación (=)
-                taddc.append({
-                    'obj': 'T1',
-                    'fuente': op2,
-                    'op': '='
-                })
-            # Se agregar otro renglón en la triplo : variable temporal, segundo operando y operador
-            # A partir de la segunda iteración:
-            # Se agrega un renglón en la triplo : variable temporal, operando y operador
-            taddc.append({
-                'obj': 'T1',
-                'fuente': op1,
-                'op': el
-            })
-
-            # Se sustituye el operador y los 2 operandos de la variable auxiliar por la variable temporal.
-            aux.append('T1')
-            i += 1  # increment counter
-            
-            # Se verifica el fin de cadena original
-            if len(string) == 1:
-                # Se asigna la cadena auxiliar a la cadena original
-                string = aux
-                break
-        else:
-            # agregar operando a la pila
-            aux.append(el)
-        # Se regresa al paso P2
-        # se lee el siguiente operando
-        el = string.pop()
-
-    # final step, asign last temporal to variable
-    tmp = string.pop()
-    var = string.pop()
-    taddc.append({
-        'obj': var,
-        'fuente': tmp,
-        'op': '='
-    })
-    return taddc
 
 def p_statement_expr(p):
     'statement : expression'
@@ -154,7 +83,7 @@ def p_expression_binop(p):
                   | expression MINUS expression
                   | expression TIMES expression
                   | expression DIVIDE expression'''
-    p[0] = [p[1], p[3], p[2]]
+    p[0] = [p[1], p[2], p[3]]
 
 
 def p_expression_uminus(p):
