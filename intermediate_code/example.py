@@ -7,7 +7,7 @@
 import ply.yacc as yacc
 import sys
 import ply.lex as lex
-from helpers import flatten, three_add_code, infix_to_postfix
+from helpers import flatten, three_add_code, infix_to_postfix, dictToCsv
 import json
 
 tokens = (
@@ -69,8 +69,8 @@ def p_statement_assign(p):
     assign = p[2]
     infix = flatten(p[3])  # obtain a flat array of elements
     postfix = infix_to_postfix(infix)
-    print(postfix)
-    print(json.dumps(three_add_code(var, assign, postfix)))
+    data = three_add_code(var, assign, postfix)
+    dictToCsv(data)
 
 
 def p_statement_expr(p):

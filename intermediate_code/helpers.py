@@ -1,5 +1,5 @@
 import re
-
+import csv
 
 OPERATORS = ['*', '/', '+', '-', '(', ')']
 PRECEDENCE = {
@@ -9,6 +9,16 @@ PRECEDENCE = {
     "-": 2,
     "(": 1,
 }
+
+
+def dictToCsv(data):
+    keys = data[0].keys()
+    with open('output/taddc.csv', 'w', newline='') as output_file:
+        dict_writer = csv.DictWriter(output_file, keys)
+        dict_writer.writeheader()
+        dict_writer.writerows(data)
+
+
 def flatten(seq):
     l = []
     for elt in seq:
@@ -25,7 +35,6 @@ def infix_to_postfix(array):
     ''' 
     Funcion para crear un posfijo desde un infijo
     '''
-    
     postfix = []
     opStack = []
     infix = []
@@ -75,6 +84,7 @@ def three_add_code(var, assign, postfix):
             op1 = aux.pop()
             op2 = aux.pop()
 
+            # check the precedence to increment temp
             if lastPrecedence is not None:
                 if not lastPrecedence == PRECEDENCE[el]:
                     tmpCont += 1
@@ -84,7 +94,7 @@ def three_add_code(var, assign, postfix):
                         'op': '='
                     })
 
-            # En la primera iteración:
+            # En la primera iteración
             if i == 0:
                 lastPrecedence = PRECEDENCE[el]
                 # Se agrega un renglón en la triplo : variable temporal, primer operando y la operación (=)
@@ -93,6 +103,7 @@ def three_add_code(var, assign, postfix):
                     'fuente': op2,
                     'op': '='
                 })
+                
             # Se agregar otro renglón en la triplo : variable temporal, segundo operando y operador
             # A partir de la segunda iteración:
             # Se agrega un renglón en la triplo : variable temporal, operando y operador

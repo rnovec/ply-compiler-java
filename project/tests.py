@@ -32,7 +32,7 @@ class CompilerTestCase(TestCase):
             ['num1', '*', 'num2', '+', 'num3', '/', 'numero4', '*', 'soynumero5', '+', 'SoyNumero6']), ['num1', 'num2', '*', 'num3', 'numero4', '/', 'soynumero5', '*', '+', 'SoyNumero6', '+'])
         self.assertEqual(infix_to_postfix(
             [123445, '+', 10231, '/', 12312, '/', 123124, '*', 42123, '-', 12312351, '-', 123515123]), [123445, 10231, 12312, '/', 123124, '/', 42123, '*', '+', 12312351, '-', 123515123, '-'])
-        self.assertEqual(len(three_add_code('w', '=', self.case1)), 5)
-        self.assertEqual(len(three_add_code('x', '=', self.case2)), 5)
-        self.assertEqual(len(three_add_code('y', '=', self.case3)), 4)
-        self.assertEqual(len(three_add_code('z', '=', self.case4)), 6)
+        self.assertEqual(len(three_add_code('w', '=', self.case1)), 7)
+        self.assertEqual(len(three_add_code('x', '=', self.case2)), 6)
+        self.assertEqual(len(three_add_code('y', '=', self.case3)), 5)
+        self.assertEqual(len(three_add_code('z', '=', self.case4)), 8)
