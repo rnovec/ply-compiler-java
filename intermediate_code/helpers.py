@@ -13,7 +13,7 @@ def flatten(seq):
     return l
 
 
-def infix_to_postfix(infix):
+def infix_to_postfix(array):
     ''' 
     Funcion para crear un posfijo desde un infijo
     '''
@@ -26,10 +26,12 @@ def infix_to_postfix(infix):
     }
     postfix = []
     opStack = []
-    validator = re.compile(r'([a-zA-Z]|[0-9])')
+    infix = []
+    for symbol in array:
+        infix.append(str(symbol))
 
     for symbol in infix:
-        if validator.match(symbol):
+        if symbol not in ['*', '/', '+', '-', '(', ')']:
             postfix.append(symbol)
         elif symbol == '(':
             opStack.append(symbol)
