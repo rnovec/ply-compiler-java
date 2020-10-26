@@ -1,6 +1,14 @@
 import re
 
 
+OPERATORS = ['*', '/', '+', '-', '(', ')']
+PRECEDENCE = {
+    "*": 3,
+    "/": 3,
+    "+": 2,
+    "-": 2,
+    "(": 1,
+}
 def flatten(seq):
     l = []
     for elt in seq:
@@ -17,21 +25,15 @@ def infix_to_postfix(array):
     ''' 
     Funcion para crear un posfijo desde un infijo
     '''
-    precedence = {
-        "*": 3,
-        "/": 3,
-        "+": 2,
-        "-": 2,
-        "(": 1,
-    }
+    
     postfix = []
     opStack = []
     infix = []
     for symbol in array:
-        infix.append(str(symbol))
+        infix.append(symbol)
 
     for symbol in infix:
-        if symbol not in ['*', '/', '+', '-', '(', ')']:
+        if symbol not in OPERATORS:
             postfix.append(symbol)
         elif symbol == '(':
             opStack.append(symbol)
@@ -42,8 +44,8 @@ def infix_to_postfix(array):
                 symbolTope = opStack.pop()
         else:
             while (not opStack == []) and \
-                    (precedence[opStack[len(opStack)-1]]) >= \
-                    precedence[symbol]:
+                    (PRECEDENCE[opStack[len(opStack)-1]]) >= \
+                    PRECEDENCE[symbol]:
                 postfix.append(opStack.pop())
             opStack.append(symbol)
 
@@ -52,29 +54,42 @@ def infix_to_postfix(array):
     return postfix
 
 
-def three_add_code(string):
+def three_add_code(var, assign, postfix):
     """
     Create a Three Addres Code Table
     from a inverted postfix array
     """
+    # reverse the list to use as stack
+    string = list(reversed([var] + postfix + [assign]))
     aux = list()  # auxiliar stack
     taddc = list()  # Three Addres Code (EDD)
-    print(string)
     i = 0  # counter of iterations
+    tmpCont = 1  # counter of temporals
     el = string.pop()  # get the first operand
+    lastPrecedence = None
     while el and len(string):
         # Recorrer la expresión hasta encontrar el primer operador
-        if el in ['*', '-', '+', '/']:
+        if el in OPERATORS:
             # Asignar a una variable auxiliar, el operador y los operandos previos
             # Asignar a una segunda variable auxiliar, el operador y los 2 operandos previos.
             op1 = aux.pop()
             op2 = aux.pop()
 
+            if lastPrecedence is not None:
+                if not lastPrecedence == PRECEDENCE[el]:
+                    tmpCont += 1
+                    taddc.append({
+                        'obj': f'T{tmpCont}',
+                        'fuente': op2,
+                        'op': '='
+                    })
+
             # En la primera iteración:
             if i == 0:
+                lastPrecedence = PRECEDENCE[el]
                 # Se agrega un renglón en la triplo : variable temporal, primer operando y la operación (=)
                 taddc.append({
-                    'obj': 'T1',
+                    'obj': f'T{tmpCont}',
                     'fuente': op2,
                     'op': '='
                 })
@@ -82,13 +97,13 @@ def three_add_code(string):
             # A partir de la segunda iteración:
             # Se agrega un renglón en la triplo : variable temporal, operando y operador
             taddc.append({
-                'obj': 'T1',
+                'obj': f'T{tmpCont}',
                 'fuente': op1,
                 'op': el
             })
 
             # Se sustituye el operador y los 2 operandos de la variable auxiliar por la variable temporal.
-            aux.append('T1')
+            aux.append(f'T{tmpCont}')
             i += 1  # increment counter
 
             # Se verifica el fin de cadena original

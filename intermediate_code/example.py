@@ -8,6 +8,8 @@ import ply.yacc as yacc
 import sys
 import ply.lex as lex
 from helpers import flatten, three_add_code, infix_to_postfix
+import json
+
 tokens = (
     'NAME', 'NUMBER',
     'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'EQUALS',
@@ -63,14 +65,12 @@ names = {}
 def p_statement_assign(p):
     'statement : NAME EQUALS expression'
     names[p[1]] = p[3]
-    var = [p[1]]
-    assign = [p[2]]
+    var = p[1]
+    assign = p[2]
     infix = flatten(p[3])  # obtain a flat array of elements
-    print(infix)
     postfix = infix_to_postfix(infix)
-    # reverse the list to use as stack
-    string = list(reversed(var + postfix + assign))
-    print(three_add_code(string))
+    print(postfix)
+    print(json.dumps(three_add_code(var, assign, postfix)))
 
 
 def p_statement_expr(p):
