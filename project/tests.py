@@ -1,29 +1,23 @@
 from intermediate_code.helpers import infix_to_postfix, three_add_code
 from django.test import TestCase
 
-
 class CompilerTestCase(TestCase):
 
     def setUp(self):
-        self.case1 = ['a', '+', 'b', '*', 'c', '+', 'd']
-        self.case2 = ['(', 'A', '+', 'B', ')', '*', '(', 'C', '+', 'D', ')']
-        self.case3 = ['(', 'a', '+', 'b', ')', '*', 'c']
-        self.case4 = [2, '+', 1, '+', 2, '/', 3, '*', 3]
-        self.res1 = ['a', 'b', 'c', '*', '+', 'd', '+']
-        self.res2 = ['A', 'B', '+', 'C', 'D', '+', '*']
-        self.res3 = ['a', 'b', '+', 'c', '*']
-        self.res4 = [2, 1, '+', 2, 3, '/', 3, '*', '+']
+        self.cases = [[2],  [2, '+', 1], ['a', '+', 'b', '*', 'c', '+', 'd'],
+                      ['(', 'A', '+', 'B', ')', '*', '(', 'C', '+', 'D', ')'],
+                      ['(', 'a', '+', 'b', ')', '*', 'c'], [2, '+', 1, '+', 2, '/', 3, '*', 3]]
+        self.responses = [[2], [2, 1, '+'], ['a', 'b', 'c', '*', '+', 'd', '+'],
+                          ['A', 'B', '+', 'C', 'D', '+', '*'], ['a', 'b', '+', 'c', '*'],
+                          [2, 1, '+', 2, 3, '/', 3, '*', '+']]
 
     def test_three_address_code(self):
         """Test cases for infix to postfix array"""
-        self.case1 = infix_to_postfix(self.case1)
-        self.case2 = infix_to_postfix(self.case2)
-        self.case3 = infix_to_postfix(self.case3)
-        self.case4 = infix_to_postfix(self.case4)
-        self.assertEqual(self.case1, self.res1)
-        self.assertEqual(self.case2, self.res2)
-        self.assertEqual(self.case3, self.res3)
-        self.assertEqual(self.case4, self.res4)
+        i = 0
+        for case in self.cases:
+            case = infix_to_postfix(case)
+            self.assertEqual(case, self.responses[i])
+            i += 1
         self.assertEqual(infix_to_postfix(
             ['2', '+', '1', '-', '3', '*', '4', '/', '1']), ['2', '1', '+', '3', '4', '*', '1', '/', '-'])
         self.assertEqual(infix_to_postfix(
@@ -32,7 +26,9 @@ class CompilerTestCase(TestCase):
             ['num1', '*', 'num2', '+', 'num3', '/', 'numero4', '*', 'soynumero5', '+', 'SoyNumero6']), ['num1', 'num2', '*', 'num3', 'numero4', '/', 'soynumero5', '*', '+', 'SoyNumero6', '+'])
         self.assertEqual(infix_to_postfix(
             [123445, '+', 10231, '/', 12312, '/', 123124, '*', 42123, '-', 12312351, '-', 123515123]), [123445, 10231, 12312, '/', 123124, '/', 42123, '*', '+', 12312351, '-', 123515123, '-'])
-        self.assertEqual(len(three_add_code('w', '=', self.case1)), 7)
-        self.assertEqual(len(three_add_code('x', '=', self.case2)), 6)
-        self.assertEqual(len(three_add_code('y', '=', self.case3)), 5)
-        self.assertEqual(len(three_add_code('z', '=', self.case4)), 8)
+        # self.assertEqual(len(three_add_code('w', '=', self.responses[0])), 7)
+        self.assertEqual(len(three_add_code('w', '=', self.responses[1])), 3)
+        self.assertEqual(len(three_add_code('w', '=', self.responses[2])), 7)
+        self.assertEqual(len(three_add_code('x', '=', self.responses[3])), 6)
+        self.assertEqual(len(three_add_code('y', '=', self.responses[4])), 5)
+        self.assertEqual(len(three_add_code('z', '=', self.responses[5])), 8)
