@@ -200,8 +200,7 @@ class JavaParser(object):
     def compile(self, program):
         self.parser.parse(program)
         self.semerrors += self.errors.values()
-        # print(json.dumps(self.taddc))
-        return self.semerrors, self.names
+        return self.semerrors, self.names, self.taddc
 
     def compile_from_file(self, file_path):
         f = open(file_path, 'r')

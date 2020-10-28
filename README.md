@@ -1,3 +1,5 @@
+# Java Compiler API
+
 ## Instalation
 
 ### Entorno virtual
@@ -14,21 +16,17 @@
     .\venv\Scripts\activate
     pip install -r requirements.txt
 
-## Run Server
+## Run server
 
-    python app.py
+    python manage.py runserver
 
-## Programmatly
+## Run tests
 
-    python compiler/parse.py test/1-vars.java
-    python compiler/parse.py test/2-functions.java
-    python compiler/parse.py test/3-iterators.java
+    python manage.py test
 
-# Gramaticas
+## Grammar
 
 ```
-Grammar
-
 S' -> S
 S -> sentences S
 S -> sentences SEP1 S
@@ -92,7 +90,7 @@ logical -> OPLO3
   - Se agrega a la lista de vistos, tokens y tabla de simbolos
   - Si es un token duplicado se le signa el valor de su primera aparicion
   - Si es un SEP1 se agrega un salto de linea al archivo de tokens, sino un espacio.
-- Se cierran los archivos de salida y se devuelven las listas generadas (*Archivo de tokens*, *Tabla de símbolos* y *Errores léxicos*)
+- Se cierran los archivos de salida y se devuelven las listas generadas (_Archivo de tokens_, _Tabla de símbolos_ y _Errores léxicos_)
 
 ### Analisis Sintáctico
 
@@ -114,3 +112,19 @@ logical -> OPLO3
   - Es decir no se encuentra en el arreglo de nombres, se agrega un error al arreglo de errores
   - Sino se actualiza el valor de la variable y se compara si los tipos de datos coinciden entre las variables involucradas en la asignacion
 - Finalmente, se compara la tabla de simbolos con el arreglo de nombres de variables y se asigna el tipo de dato a los tokens de tipo **ID**.
+
+### Triplos
+
+1. Convertir la expresión aritmética en infijo a postfijo
+2. Repetir
+   1. Recorrer la expresión hasta encontrar el primer operador
+   2. Asignar a una variable auxiliar, el operador y los operandos previos.
+   3. Asignar a una segunda variable auxiliar, el operador y los 2 operandos previos.
+   4. En la primera iteración:
+   5. Se agrega un renglón en la triplo : variable temporal, primer operando y la operación (=)
+   6. Se agregar otro renglón en la triplo : variable temporal, segundo operando y operador
+   7. A partir de la segunda iteración:
+   8. Se agrega un renglón en la triplo : variable temporal, operando y operador
+   9. Se sustituye el operador y los 2 operandos de la variable auxiliar por la variable
+      temporal.
+3. Hasta recorrer toda la expresión en postfijo

@@ -22,21 +22,28 @@ from compiler.parser import JavaParser
 import re
 import json
 
+
 @csrf_exempt
 def compile(request):
-    json_data = json.loads(request.body)  # request.raw_post_data w/ Django < 1.4
+    # request.raw_post_data w/ Django < 1.4
+    json_data = json.loads(request.body)
     program = json_data['program']
     JL = JavaLexer()
     JP = JavaParser()
     tokensFile, simbolTable, lexerr = JL.tokenizer(program)
-    errors, names = JP.compile(program)
+    errors, names, taddc = JP.compile(program)
     for t in simbolTable:
         if re.match(r'ID', t['type']):
             try:
                 t['vartype'] = names[t['value']]['vartype']
             except Exception as err:
                 pass
-    return JsonResponse({'simbolTable': simbolTable, 'tokensFile': tokensFile, 'errors': lexerr + errors})
+    return JsonResponse({'simbolTable': simbolTable,
+                         'tokensFile': tokensFile,
+                         'errors': lexerr + errors,
+                         'taddc': taddc
+                         })
+
 
 urlpatterns = [
     path('compile', compile),
