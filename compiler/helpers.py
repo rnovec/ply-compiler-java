@@ -21,6 +21,8 @@ def dictToCsv(data):
 
 def flatten(seq):
     l = []
+    # if seq is not list or tuple:
+    #     return [seq]
     for elt in seq:
         t = type(elt)
         if t is tuple or t is list:

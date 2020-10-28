@@ -1,26 +1,33 @@
 # -----------------------------------------------------------------------------
 # parser.py
 #
-# Analizador sintáctico y semántico 
+# Analizador sintáctico y semántico
 # -----------------------------------------------------------------------------
-import ply.yacc as yacc
+
 import sys
-from .lexer import JavaLexer
 import re
+import json
+import ply.yacc as yacc
+from .lexer import JavaLexer
+from .helpers import flatten, three_add_code, infix_to_postfix, dictToCsv, OPERATORS
+
 
 class JavaParser(object):
 
     # Precedence rules for the arithmetic operators
-    precedence = ()
+    precedence = (
+        ('left', 'OPAR1', 'OPAR2'),
+        ('left', 'OPAR3', 'OPAR4')
+    )
 
     # for storing variables
     names = {}
     functions = {}
     semerrors = list()
+    taddc = list()
     errors = dict()
     tokens = JavaLexer.tokens
     errsint = 0
-    lastID = str()
 
     """ 1 : SENTENCIAS RECURSIVAS """
 
@@ -41,28 +48,12 @@ class JavaParser(object):
 
     def p_var_declarations(self, p):
         '''declarations : types ID AS1 expression'''
-        value = None
-        try:
-            if p[1] == 'float':
-                value = float(p[4])
-                if not type(p[4]) == float: raise TypeError
-            elif p[1] == 'int':
-                value = int(p[4])
-                if not type(p[4]) == int: raise TypeError
-            elif p[1] == 'bool':
-                value = bool(p[4])
-                if not type(p[4]) == bool: raise TypeError
-            elif p[1] == 'string':
-                value = str(p[4])
-                if not type(p[4]) == str: raise TypeError
-            p[0] = value
-        except TypeError:
-            self.type_err(p, 2)
-            p[0] = value
-        finally:
-            self.add_var(p, 2, p[1], value)
-            
-                
+        self.create_new_var(p[1], p[2], p.lineno(2))
+        infix = flatten(p[4])  # obtain a flat array of elements
+        self.check_types(p[2], infix, p.lineno(3))
+        postfix = infix_to_postfix(infix)
+        data = three_add_code(p[2], p[3], postfix)
+        self.taddc.append(data)
 
     def p_var_declarations_error(self, p):
         '''declarations : ID ID AS1 expression'''
@@ -70,9 +61,17 @@ class JavaParser(object):
             'line': p.lineno(1),
             'value': p[1],
             'desc': "Type error",
-            'type': "ERRLXTD",
-            # 'pos': p.lexpos(1)
+            'type': "ERRLXTD"
         }
+
+    def p_expression_name_assign(self, p):
+        '''expression : ID AS1 expression'''
+        # self.names[p[1]] = p[3]
+        infix = flatten(p[3])  # obtain a flat array of elements
+        self.check_types(p[1], infix, p.lineno(2))
+        postfix = infix_to_postfix(infix)
+        data = three_add_code(p[1], p[2], postfix)
+        self.taddc.append(data)
 
     def p_expression_binop(self, p):
         '''expression : expression OPAR1 expression
@@ -80,15 +79,7 @@ class JavaParser(object):
                     | expression OPAR3 expression
                     | expression OPAR4 expression
                     | expression OPAR5 expression'''
-        try:
-            if not type(p[1]) == type(p[3]): raise TypeError 
-            res = self.calc(p[2], p[1], p[3])
-            p[0] = res
-        except TypeError:
-            if p[1] is not None and p[3] is not None:
-                self.type_err(p, 2)
-            p[0] = 0
-        
+        p[0] = [p[1], p[2], p[3]]
 
     def calc(self, op, val1, val2):
         val = None
@@ -112,32 +103,8 @@ class JavaParser(object):
 
     def p_expression_name(self, p):
         'expression : ID'
-        p[0] = self.existing_var(p)
-
-    def p_expression_name_assign(self, p):
-        '''expression : ID AS1 expression'''
-        value = None
-        try:
-            var = self.existing_var(p)
-            if type(var) == 'float':
-                value = float(p[3])
-                if not type(p[3]) == float: raise TypeError
-            elif type(var) == 'int':
-                value = int(p[3])
-                if not type(p[3]) == int: raise TypeError
-            elif type(var) == 'bool':
-                value = bool(p[3])
-                if not type(p[3]) == bool: raise TypeError
-            elif type(var) == 'string':
-                value = str(p[3])
-                if not type(p[3]) == str: raise TypeError
-            #self.add_var(p, 1, type(var), value)
-        except TypeError:
-            if var is not None:
-                self.type_err(p, 1)
-        finally:
-            p[0] = value
-            
+        # self.existing_var(p[1], p.lineno(1))
+        p[0] = p[1]
 
     """ 3 : FUNCIONES  """
 
@@ -158,16 +125,7 @@ class JavaParser(object):
     def p_argv_rec(self, p):
         '''argv_rec : types ID SEP2 argv_rec
                     | types ID'''
-        value = None
-        if p[1] == 'float':
-            value = float(0)
-        elif p[1] == 'int':
-            value = int(0)
-        elif p[1] == 'bool':
-            value = bool(0)
-        elif p[1] == 'string':
-            value = str('')
-        self.add_var(p, 2, p[1], value)
+        self.create_new_var(p[1], p[2], p.lineno(2))
 
     def p_types(self, p):
         '''types : TD1
@@ -181,7 +139,7 @@ class JavaParser(object):
 
     def p_while(self, p):
         '''iterators : IT1 DEL1 expr DEL2 DEL3 S DEL4'''
-        print(p[1])
+        p[0] = p[1]
 
     def p_expr(self, p):
         '''expr : expr_rec'''
@@ -196,12 +154,8 @@ class JavaParser(object):
     def p_val(self, p):
         '''val : ID
                | CNE'''
-        try:
-            print(float(p[1]))
-            p[0] = float(p[1])
-        except ValueError:
-            p[0] = self.existing_var(p)
-              
+        self.existing_var(p[1], p.lineno(1))
+        p[0] = p[1]
 
     def p_relational(self, p):
         '''relational : OPRE1
@@ -211,7 +165,7 @@ class JavaParser(object):
                 | OPRE5
                 | OPRE6'''
         p[0] = p[1]
-    
+
     def p_logical(self, p):
         '''logical : OPLO1
                 | OPLO2
@@ -237,6 +191,7 @@ class JavaParser(object):
         self.names = {}
         self.functions = {}
         self.semerrors = list()
+        self.taddc = list()
         self.errors = dict()
         self.errsint = 0
         self.lexer = JavaLexer()
@@ -245,53 +200,78 @@ class JavaParser(object):
     def compile(self, program):
         self.parser.parse(program)
         self.semerrors += self.errors.values()
+        # print(json.dumps(self.taddc))
         return self.semerrors, self.names
 
-    def existing_var(self, var):
+    def compile_from_file(self, file_path):
+        f = open(file_path, 'r')
+        program = f.read()
+        self.compile(program)
+        f.close()
+
+    def existing_var(self, name, line):
         try:
-            return self.names[var[1]]['value']
-        except LookupError:
-            self.undef_name_err(var, 1)
-            return None
+            float(name)
+        except ValueError as err:
+            try:
+                if self.names[name]['vartype']:
+                    pass
+            except KeyError as err:
+                print('Undefined name:', err)
+                self.semerrors.append({
+                    'value': name,
+                    'line': line,
+                    'desc': "Nombre indefinido",
+                    'type': "ERRSEM"
+                })
 
-    def type_err(self, p, index):
-        self.semerrors.append({
-            'line': p.lineno(index),
-            'value': p[index],
-            'desc': "Tipos incompatibles",
-            'type': f"ERRSEM",
-            'pos': p.lexpos(index)
-        })
-    
-    def undef_name_err(self, name, index):
-        self.semerrors.append({
-            'line': name.lineno(index),
-            'value': name[index],
-            'desc': "Nombre indefinido",
-            'type': "ERRSEM",
-            # 'pos': name.lexpos(index)
-        })
+    def check_types(self, var, infix, line):
+        lastType = None
+        self.existing_var(var, line)
+        try:
+            if self.names[var]:
+                lastType = self.names[var]['vartype']
+        except Exception as err:
+            pass
+        for symbol in infix:
+            if symbol not in OPERATORS:
+                if type(symbol) is str:
+                    self.existing_var(symbol, line)
+                    try:
+                        if self.names[symbol]:
+                            if not self.names[symbol]['vartype'] == lastType:
+                                self.semerrors.append({
+                                    'line': line,
+                                    'value': symbol,
+                                    'desc': "Tipos incompatibles",
+                                    'type': f"ERRSEM"
+                                })
+                                break
+                    except Exception as err:
+                        pass
+                elif not str(lastType) in str(type(symbol)) and lastType is not None:
+                    self.semerrors.append({
+                        'line': line,
+                        'value': symbol,
+                        'desc': "Tipos incompatibles",
+                        'type': f"ERRSEM"
+                    })
+                    break
 
-    def add_var(self, name, index, type, value):
-        self.names[name[index]] = {
-            'value': value,
+    def create_new_var(self, type, name, line):
+        self.names[name] = {
+            'value': name,
             'vartype': type,
-            'line': name.lineno(index),
-            # 'pos': name.lexpos(index)
+            'line': line
         }
-        
+        print('New name declared:', self.names[name])
+
+
 # MAIN
 if __name__ == "__main__":
-    try:
-        file = sys.argv[1]
-        f = open(file, 'r')
-        program = f.read()
-        f.close()
-        JavaParser().compile(program)
-    except IndexError:
-        while True:
-            try:
-                s = input('pyjava > ')
-            except EOFError:
-                break
-            JavaParser().parser.parse(s)
+    while True:
+        try:
+            s = input('pyjava > ')
+        except EOFError:
+            break
+        JavaParser().parser.parse(s)
