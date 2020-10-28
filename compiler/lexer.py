@@ -219,12 +219,8 @@ class JavaLexer(object):
         ftok.close()
         return tokenFile, simtable, self.errors
 
-
-# MAIN
-if __name__ == "__main__":
-    f = open(sys.argv[1], 'r')
-    datos = f.read()
-    f.close()
-    JL = JavaLexer()
-    TF, ST = JL.tokenizer(datos)
-    print(ST)
+    def from_file(self, file_path):
+        f = open(file_path, 'r')
+        program = f.read()
+        f.close()
+        return self.tokenizer(program)

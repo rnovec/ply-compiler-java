@@ -7,7 +7,7 @@
 import ply.yacc as yacc
 import sys
 import ply.lex as lex
-from helpers import flatten, three_add_code, infix_to_postfix, dictToCsv
+from compiler.helpers import flatten, three_add_code, infix_to_postfix, dictToCsv
 import json
 
 tokens = (

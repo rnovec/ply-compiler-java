@@ -1,4 +1,6 @@
-from intermediate_code.helpers import infix_to_postfix, three_add_code
+from compiler.lexer import JavaLexer
+from compiler.parser import JavaParser
+from compiler.helpers import infix_to_postfix, three_add_code
 from django.test import TestCase
 
 class CompilerTestCase(TestCase):
@@ -32,3 +34,15 @@ class CompilerTestCase(TestCase):
         self.assertEqual(len(three_add_code('x', '=', self.responses[3])), 6)
         self.assertEqual(len(three_add_code('y', '=', self.responses[4])), 5)
         self.assertEqual(len(three_add_code('z', '=', self.responses[5])), 8)
+
+    def test_compiler_parser(self):
+        """Test for JavaParser and JavaLexer"""
+        JL, JP = JavaLexer(), JavaParser()
+        # JL.from_file('examples/ejemplo1.java')
+        # JL.from_file('examples/ejemplo2.java')
+        # JL.from_file('examples/ejemplo3.java')
+        JL.from_file('examples/ejemplo4.java')
+        # JP.compile_from_file('examples/ejemplo1.java')
+        # JP.compile_from_file('examples/ejemplo2.java')
+        # JP.compile_from_file('examples/ejemplo3.java')
+        JP.compile_from_file('examples/ejemplo4.java')
