@@ -1,6 +1,6 @@
 void prueba1 ()
 {
-    int a = a + b * 5;
+    int a = a + b + c * 5;
     while ( y < 8)
     {
         a = a * 5;

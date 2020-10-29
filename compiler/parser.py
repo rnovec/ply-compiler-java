@@ -216,7 +216,7 @@ class JavaParser(object):
                 if self.names[name]['vartype']:
                     pass
             except KeyError as err:
-                print('Undefined name:', err)
+                # print('Undefined name:', err)
                 self.semerrors.append({
                     'value': name,
                     'line': line,
@@ -263,7 +263,7 @@ class JavaParser(object):
             'vartype': type,
             'line': line
         }
-        print('New name declared:', self.names[name])
+        # print('New name declared:', self.names[name])
 
 
 # MAIN

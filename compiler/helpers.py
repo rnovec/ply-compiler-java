@@ -75,7 +75,7 @@ def three_add_code(var, assign, postfix):
     aux = list()  # auxiliar stack
     taddc = list()  # Three Addres Code (EDD)
     i = 0  # counter of iterations
-    tmpCont = 1  # counter of temporals
+    tmpCont = 0  # counter of temporals
     el = string.pop()  # get the first operand
     lastPrecedence = None
     while el and len(string):
@@ -83,35 +83,26 @@ def three_add_code(var, assign, postfix):
         if el in OPERATORS:
             # Asignar a una variable auxiliar, el operador y los operandos previos
             # Asignar a una segunda variable auxiliar, el operador y los 2 operandos previos.
-            op1 = aux.pop()
             op2 = aux.pop()
-
-            # check the precedence to increment temp
-            if lastPrecedence is not None:
-                if not lastPrecedence == PRECEDENCE[el]:
-                    tmpCont += 1
-                    taddc.append({
-                        'obj': f'T{tmpCont}',
-                        'fuente': op2,
-                        'op': '='
-                    })
+            op1 = aux.pop()
 
             # En la primera iteración
-            if i == 0:
-                lastPrecedence = PRECEDENCE[el]
+            if not lastPrecedence == PRECEDENCE[el] or lastPrecedence is None:
+                tmpCont += 1
                 # Se agrega un renglón en la triplo : variable temporal, primer operando y la operación (=)
                 taddc.append({
                     'obj': f'T{tmpCont}',
-                    'fuente': op2,
+                    'fuente': op1,
                     'op': '='
                 })
+                lastPrecedence = PRECEDENCE[el]
                 
             # Se agregar otro renglón en la triplo : variable temporal, segundo operando y operador
             # A partir de la segunda iteración:
             # Se agrega un renglón en la triplo : variable temporal, operando y operador
             taddc.append({
                 'obj': f'T{tmpCont}',
-                'fuente': op1,
+                'fuente': op2,
                 'op': el
             })
 
@@ -140,3 +131,7 @@ def three_add_code(var, assign, postfix):
         'op': '='
     })
     return taddc
+
+# case = ['a', '+', 'b', '+', 'c', '*', 5]
+# case = infix_to_postfix(case)
+# three_add_code('w', '=', case)

@@ -8,7 +8,8 @@ int,TD1
 a,ID2
 =,AS1
 +,OPAR1
-b,ID3
+c,ID3
+b,ID4
 *,OPAR3
 5,CNE1
 ;,SEP1
