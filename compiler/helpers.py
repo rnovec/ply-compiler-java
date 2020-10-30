@@ -34,7 +34,7 @@ def flatten(seq):
 
 
 def infix_to_postfix(array):
-    ''' 
+    '''
     Funcion para crear un posfijo desde un infijo
     '''
     postfix = []
@@ -74,7 +74,6 @@ def three_add_code(var, assign, postfix):
     string = list(reversed([var] + postfix + [assign]))
     aux = list()  # auxiliar stack
     taddc = list()  # Three Addres Code (EDD)
-    i = 0  # counter of iterations
     tmpCont = 0  # counter of temporals
     el = string.pop()  # get the first operand
     lastPrecedence = None
@@ -96,7 +95,7 @@ def three_add_code(var, assign, postfix):
                     'op': '='
                 })
                 lastPrecedence = PRECEDENCE[el]
-                
+
             # Se agregar otro renglón en la triplo : variable temporal, segundo operando y operador
             # A partir de la segunda iteración:
             # Se agrega un renglón en la triplo : variable temporal, operando y operador
@@ -108,7 +107,6 @@ def three_add_code(var, assign, postfix):
 
             # Se sustituye el operador y los 2 operandos de la variable auxiliar por la variable temporal.
             aux.append(f'T{tmpCont}')
-            i += 1  # increment counter
 
             # Se verifica el fin de cadena original
             if len(string) == 1:
@@ -131,6 +129,7 @@ def three_add_code(var, assign, postfix):
         'op': '='
     })
     return taddc
+
 
 # case = ['a', '+', 'b', '+', 'c', '*', 5]
 # case = infix_to_postfix(case)

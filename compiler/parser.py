@@ -9,7 +9,7 @@ import re
 import json
 import ply.yacc as yacc
 from .lexer import JavaLexer
-from .helpers import flatten, three_add_code, infix_to_postfix, dictToCsv, OPERATORS
+from .helpers import *
 
 
 class JavaParser(object):
@@ -35,25 +35,21 @@ class JavaParser(object):
         '''S : sentences S
             | sentences SEP1 S
             | sentences'''
-        pass
+        p[0] = p[1]
 
     def p_sentences(self, p):
         '''sentences : declarations SEP1
             | expression SEP1
             | function
             | iterators'''
-        pass
+        p[0] = p[1]
 
     """ 2 : DECLARACIONES  """
 
     def p_var_declarations(self, p):
         '''declarations : types ID AS1 expression'''
         self.create_new_var(p[1], p[2], p.lineno(2))
-        infix = flatten(p[4])  # obtain a flat array of elements
-        self.check_types(p[2], infix, p.lineno(3))
-        postfix = infix_to_postfix(infix)
-        data = three_add_code(p[2], p[3], postfix)
-        self.taddc.append(data)
+        p[0] = self.taddc_aritmetic(p[2], p[3], p[4], p.lineno(2))
 
     def p_var_declarations_error(self, p):
         '''declarations : ID ID AS1 expression'''
@@ -63,15 +59,12 @@ class JavaParser(object):
             'desc': "Type error",
             'type': "ERRLXTD"
         }
+        p[0] = self.taddc_aritmetic(p[2], p[3], p[4], p.lineno(2))
 
     def p_expression_name_assign(self, p):
         '''expression : ID AS1 expression'''
         # self.names[p[1]] = p[3]
-        infix = flatten(p[3])  # obtain a flat array of elements
-        self.check_types(p[1], infix, p.lineno(2))
-        postfix = infix_to_postfix(infix)
-        data = three_add_code(p[1], p[2], postfix)
-        self.taddc.append(data)
+        p[0] = self.taddc_aritmetic(p[1], p[2], p[3], p.lineno(2))
 
     def p_expression_binop(self, p):
         '''expression : expression OPAR1 expression
@@ -95,7 +88,7 @@ class JavaParser(object):
 
     def p_expression_group(self, p):
         'expression : DEL1 expression DEL2'
-        p[0] = p[2]
+        p[0] = [p[1], p[2], p[3]]
 
     def p_expression_number(self, p):
         'expression : CNE'
@@ -103,7 +96,6 @@ class JavaParser(object):
 
     def p_expression_name(self, p):
         'expression : ID'
-        # self.existing_var(p[1], p.lineno(1))
         p[0] = p[1]
 
     """ 3 : FUNCIONES  """
@@ -139,23 +131,26 @@ class JavaParser(object):
 
     def p_while(self, p):
         '''iterators : IT1 DEL1 expr DEL2 DEL3 S DEL4'''
+        print(p[3])
         p[0] = p[1]
 
     def p_expr(self, p):
         '''expr : expr_rec'''
-        pass
+        p[0] = p[1]
 
-    def p_expr_rec(self, p):
-        '''expr_rec : val logical expr_rec
-                    | val relational expr_rec
-                    | val'''
-        pass
+    def p_mod(self, p):
+        '''expr : expr OPAR5 expr'''
+        p[0] = [p[1], p[2], p[3]]
 
     def p_val(self, p):
-        '''val : ID
+        '''expr : ID
                | CNE'''
-        self.existing_var(p[1], p.lineno(1))
         p[0] = p[1]
+
+    def p_expr_rec(self, p):
+        '''expr_rec : expr logical expr
+                    | expr relational expr'''
+        p[0] = [p[1], p[2], p[3]]
 
     def p_relational(self, p):
         '''relational : OPRE1
@@ -182,8 +177,7 @@ class JavaParser(object):
                 'line': p.lineno,
                 'value': p.value,
                 'type': 'ERR' + p.type,
-                'desc': "Token inesperado",
-                # 'pos': p.lexpos
+                'desc': "Token inesperado"
             }
         pass
 
@@ -208,6 +202,14 @@ class JavaParser(object):
         self.compile(program)
         f.close()
 
+    def taddc_aritmetic(self, var, assign, expression, line):
+        infix = flatten(expression)  # obtain a flat array of elements
+        self.check_types(var, infix, line)
+        postfix = infix_to_postfix(infix)
+        # print(expression, infix, postfix)
+        data = three_add_code(var, assign, postfix)
+        return self.taddc.append(data)
+
     def existing_var(self, name, line):
         try:
             float(name)
@@ -231,7 +233,7 @@ class JavaParser(object):
             if self.names[var]:
                 lastType = self.names[var]['vartype']
         except Exception as err:
-            pass
+            print(err)
         for symbol in infix:
             if symbol not in OPERATORS:
                 if type(symbol) is str:
@@ -239,23 +241,21 @@ class JavaParser(object):
                     try:
                         if self.names[symbol]:
                             if not self.names[symbol]['vartype'] == lastType:
-                                self.semerrors.append({
-                                    'line': line,
-                                    'value': symbol,
-                                    'desc': "Tipos incompatibles",
-                                    'type': f"ERRSEM"
-                                })
+                                self.add_type_err(symbol, line)
                                 break
                     except Exception as err:
                         pass
                 elif not str(lastType) in str(type(symbol)) and lastType is not None:
-                    self.semerrors.append({
-                        'line': line,
-                        'value': symbol,
-                        'desc': "Tipos incompatibles",
-                        'type': f"ERRSEM"
-                    })
+                    self.add_type_err(symbol, line)
                     break
+
+    def add_type_err(self, symbol, line):
+        self.semerrors.append({
+            'line': line,
+            'value': symbol,
+            'desc': "Tipos incompatibles",
+            'type': f"ERRSEM"
+        })
 
     def create_new_var(self, type, name, line):
         self.names[name] = {
