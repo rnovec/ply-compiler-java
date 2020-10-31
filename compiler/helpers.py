@@ -1,8 +1,9 @@
 import re
 import csv
 
-OPERATORS = ['*', '/', '+', '-', '(', ')']
+OPERATORS = ['*', '/', '%', '+', '-', '(', ')']
 PRECEDENCE = {
+    "%": 3,
     "*": 3,
     "/": 3,
     "+": 2,
@@ -110,8 +111,6 @@ def three_add_code(var, assign, postfix):
 
             # Se verifica el fin de cadena original
             if len(string) == 1:
-                # Se asigna la cadena auxiliar a la cadena original
-                string = aux
                 break
         else:
             # agregar operando a la pila
@@ -119,6 +118,9 @@ def three_add_code(var, assign, postfix):
         # Se regresa al paso P2
         # se lee el siguiente operando
         el = string.pop()
+
+    # Se asigna la cadena auxiliar a la cadena original
+    string = aux
 
     # final step, asign last temporal to variable
     tmp = string.pop()
@@ -131,6 +133,8 @@ def three_add_code(var, assign, postfix):
     return taddc
 
 
-# case = ['a', '+', 'b', '+', 'c', '*', 5]
-# case = infix_to_postfix(case)
-# three_add_code('w', '=', case)
+# MAIN
+if __name__ == "__main__":
+    case = [5] # define an array for debugger
+    case = infix_to_postfix(case)
+    three_add_code('w', '=', case)
