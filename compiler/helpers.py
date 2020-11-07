@@ -1,15 +1,25 @@
 import re
 import csv
 
+
 OPAR = ['*', '/', '%', '+', '-', '(', ')']
 OPRE = ['<', '>', '<=', '>=', '==', '!=']
 OPLO = ['&&', '||']
+OPERATORS = OPAR + OPRE + OPLO
 PRECEDENCE = {
+    ">": 3,
+    "<": 3,
+    ">=": 3,
+    "<=": 3,
+    "==": 3,
+    "!=": 3,
     "%": 3,
     "*": 3,
     "/": 3,
     "+": 2,
     "-": 2,
+    "&&": 2,
+    "||": 2,
     "(": 1,
     "||": 0,
     "&&": 0
@@ -48,7 +58,7 @@ def flatten(seq):
 
 def infix_to_postfix(array):
     '''
-    Funcion para crear un posfijo desde un infijo
+    Funcion para crear un posfijo desde un infijo logico/relacional
     '''
     postfix = []
     opStack = []
@@ -57,7 +67,7 @@ def infix_to_postfix(array):
         infix.append(symbol)
 
     for symbol in infix:
-        if symbol not in OPAR:
+        if symbol not in OPERATORS:
             postfix.append(symbol)
         elif symbol == '(':
             opStack.append(symbol)
