@@ -10,6 +10,7 @@ import json
 import ply.yacc as yacc
 from .lexer import JavaLexer
 from .helpers import *
+from random import randint
 
 
 class JavaParser(object):
@@ -43,6 +44,8 @@ class JavaParser(object):
             | function
             | iterators'''
         p[0] = p[1]
+        if p[1]:
+            self.taddc.append(p[1])
 
     """ 2 : DECLARACIONES  """
 
@@ -62,7 +65,7 @@ class JavaParser(object):
         p[0] = self.taddc_aritmetic(p[2], p[3], p[4], p.lineno(2))
 
     def p_expression_name_assign(self, p):
-        '''expression : ID AS1 expression'''
+        '''declarations : ID AS1 expression'''
         # self.names[p[1]] = p[3]
         p[0] = self.taddc_aritmetic(p[1], p[2], p[3], p.lineno(2))
 
@@ -103,11 +106,11 @@ class JavaParser(object):
     def p_function(self, p):
         '''function : types ID DEL1 argv DEL2 DEL3 S DEL4
                     | DEL1 argv DEL2 DEL3 S DEL4'''
-        self.functions[p[2]] = 0
+        pass
 
     def p_function_error(self, p):
         'function : ID ID DEL1 argv DEL2 DEL3 S DEL4'
-        self.functions[p[2]] = 0
+        pass
 
     def p_argv(self, p):
         '''argv : argv_rec
@@ -131,8 +134,12 @@ class JavaParser(object):
 
     def p_while(self, p):
         '''iterators : IT1 DEL1 expr DEL2 DEL3 S DEL4'''
-        print(p[3])
-        p[0] = p[1]
+        p[0] = {'type': p[1],
+                'line': p.lineno(1),
+                'cond': ['a', 2, '%', 0, '==', 'a', 20, '<', '&&'],
+                'triplo': [],
+                'end': p.lineno(7)
+                }
 
     def p_expr(self, p):
         '''expr : expr_rec'''
@@ -194,7 +201,36 @@ class JavaParser(object):
     def compile(self, program):
         self.parser.parse(program)
         self.semerrors += self.errors.values()
-        return self.semerrors, self.names, self.taddc
+        self.taddc = list(sorted(self.taddc, key=lambda i: i['line']))
+        size = start = body = 0
+        taddc_table = list()
+        band = False
+        findAll = False
+        for i in range(len(self.taddc)):
+            el = self.taddc[i]
+            size += len(el['triplo'])
+            if el['type'] == 'while':
+                w_index = i
+                start = size + 1
+                band = True
+            elif not band:
+                taddc_table += el['triplo']
+            if band:
+                if el['line'] <= self.taddc[w_index]['end']:
+                    t = self.taddc[i]
+                    self.taddc[w_index]['triplo'] += t['triplo']
+                if self.taddc[-1] == el:
+                    body = len(self.taddc[w_index]['triplo'])
+                    print(start, body)
+                    data = intermediate_code(self.taddc[w_index]['cond'], isWhile=True, start=start, body=body)
+                    taddc_table += flatten(data)
+                    taddc_table += self.taddc[w_index]['triplo']
+                    taddc_table.append({
+                        'obj': '',
+                        'fuente': start,
+                        'op': 'JR'
+                    })
+        return self.semerrors, self.names, taddc_table
 
     def compile_from_file(self, file_path):
         f = open(file_path, 'r')
@@ -207,8 +243,12 @@ class JavaParser(object):
         self.check_types(var, infix, line)
         postfix = infix_to_postfix(infix)
         # print(expression, infix, postfix)
-        data = three_add_code(var, assign, postfix)
-        return self.taddc.append(data)
+        data = intermediate_code(postfix, var)
+        return {
+            'type': 'aritmetic',
+            'line': line,
+            'triplo': data
+        }
 
     def existing_var(self, name, line):
         try:
@@ -233,9 +273,9 @@ class JavaParser(object):
             if self.names[var]:
                 lastType = self.names[var]['vartype']
         except Exception as err:
-            print(err)
+            pass
         for symbol in infix:
-            if symbol not in OPERATORS:
+            if symbol not in OPAR:
                 if type(symbol) is str:
                     self.existing_var(symbol, line)
                     try:
