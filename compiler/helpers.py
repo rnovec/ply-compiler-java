@@ -1,13 +1,21 @@
 import re
 import csv
 
-OPERATORS = ['*', '/', '%', '+', '-', '(', ')']
+OPERATORS = [">", "<", ">=", '<=', '==', '!=', '&&', '*', '/', '%', '+', '-', '||', '(', ')']
 PRECEDENCE = {
+    ">": 3,
+    "<": 3,
+    ">=": 3,
+    "<=": 3,
+    "==": 3,
+    "!=": 3,
     "%": 3,
     "*": 3,
     "/": 3,
     "+": 2,
     "-": 2,
+    "&&": 2,
+    "||": 2,
     "(": 1,
 }
 
@@ -36,7 +44,7 @@ def flatten(seq):
 
 def infix_to_postfix(array):
     '''
-    Funcion para crear un posfijo desde un infijo
+    Funcion para crear un posfijo desde un infijo logico/relacional
     '''
     postfix = []
     opStack = []
