@@ -1,7 +1,7 @@
+from django.test import TestCase
 from compiler.lexer import JavaLexer
 from compiler.parser import JavaParser
-from compiler.helpers import infix_to_postfix, three_add_code
-from django.test import TestCase
+from compiler.helpers import *
 
 class CompilerTestCase(TestCase):
 
@@ -28,12 +28,15 @@ class CompilerTestCase(TestCase):
             ['num1', '*', 'num2', '+', 'num3', '/', 'numero4', '*', 'soynumero5', '+', 'SoyNumero6']), ['num1', 'num2', '*', 'num3', 'numero4', '/', 'soynumero5', '*', '+', 'SoyNumero6', '+'])
         self.assertEqual(infix_to_postfix(
             [123445, '+', 10231, '/', 12312, '/', 123124, '*', 42123, '-', 12312351, '-', 123515123]), [123445, 10231, 12312, '/', 123124, '/', 42123, '*', '+', 12312351, '-', 123515123, '-'])
-        # self.assertEqual(len(three_add_code('w', '=', self.responses[0])), 7)
-        self.assertEqual(len(three_add_code('w', '=', self.responses[1])), 3)
-        self.assertEqual(len(three_add_code('w', '=', self.responses[2])), 7)
-        self.assertEqual(len(three_add_code('x', '=', self.responses[3])), 6)
-        self.assertEqual(len(three_add_code('y', '=', self.responses[4])), 5)
-        self.assertEqual(len(three_add_code('z', '=', self.responses[5])), 8)
+        self.assertEqual(len(intermediate_code(self.responses[0], 'w')), 2)
+        self.assertEqual(len(intermediate_code(self.responses[1], 'w')), 3)
+        self.assertEqual(len(intermediate_code(self.responses[2], 'w')), 6)
+        self.assertEqual(len(intermediate_code(self.responses[3], 'x')), 6)
+        self.assertEqual(len(intermediate_code(self.responses[4], 'y')), 5)
+        self.assertEqual(len(intermediate_code(self.responses[5], 'z')), 8)
+
+    def test_for_iterators(self):
+        print(infix_to_postfix(['a', '%', 2, '==', 0, '&&', 'a', '<', 20]))
 
     def test_compiler_parser(self):
         """Test for JavaParser and JavaLexer"""

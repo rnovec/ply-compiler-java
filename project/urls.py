@@ -46,5 +46,5 @@ def compile(request):
 
 
 urlpatterns = [
-    path('compile', compile),
+    path('api/v1/compile', compile),
 ]
