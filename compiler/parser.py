@@ -1,8 +1,12 @@
-# -----------------------------------------------------------------------------
-# parser.py
-#
-# Analizador sintáctico y semántico
-# -----------------------------------------------------------------------------
+"""
+Author: Raul Novelo
+        raul.novelo@aaaimx.org
+
+        `parser.py` is a implementation of Yacc and uses 
+        tokens declared in `lexer.py`.
+
+        Sintatic and Semantic Analysis.
+"""
 
 import sys
 import re
@@ -10,10 +14,14 @@ import json
 import ply.yacc as yacc
 from .lexer import JavaLexer
 from .helpers import *
+from .three_add_code import *
 from random import randint
 
 
 class JavaParser(object):
+    """
+    Class for Sintatic and Semantic Analysis
+    """
 
     # Precedence rules for the arithmetic operators
     precedence = (
@@ -25,7 +33,7 @@ class JavaParser(object):
     names = {}
     functions = {}
     semerrors = list()
-    taddc = list()
+    triplo = list()
     errors = dict()
     tokens = JavaLexer.tokens
     errsint = 0
@@ -45,7 +53,7 @@ class JavaParser(object):
             | iterators'''
         p[0] = p[1]
         if p[1]:
-            self.taddc.append(p[1])
+            self.triplo.append(p[1])
 
     """ 2 : DECLARACIONES  """
 
@@ -134,12 +142,13 @@ class JavaParser(object):
 
     def p_while(self, p):
         '''iterators : IT1 DEL1 expr DEL2 DEL3 S DEL4'''
-        p[0] = {'type': p[1],
-                'line': p.lineno(1),
-                'cond': ['a', 2, '%', 0, '==', 'a', 20, '<', '&&'],
-                'triplo': [],
-                'end': p.lineno(7)
-                }
+        # infix = flatten(p[3])
+        # p[0] = {'type': p[1],
+        #         'line': p.lineno(1),
+        #         # 'cond': infix_to_postfix(infix),
+        #         'triplo': [],
+        #         'end': p.lineno(7)
+        #         }
 
     def p_expr(self, p):
         '''expr : expr_rec'''
@@ -192,22 +201,23 @@ class JavaParser(object):
         self.names = {}
         self.functions = {}
         self.semerrors = list()
-        self.taddc = list()
+        self.triplo = list()
         self.errors = dict()
         self.errsint = 0
         self.lexer = JavaLexer()
         self.parser = yacc.yacc(module=self)
+        self.taddc = IntermediateCode()
 
     def compile(self, program):
         self.parser.parse(program)
         self.semerrors += self.errors.values()
-        self.taddc = list(sorted(self.taddc, key=lambda i: i['line']))
+        self.triplo = list(sorted(self.triplo, key=lambda i: i['line']))
         size = start = body = 0
         taddc_table = list()
         band = False
         findAll = False
-        for i in range(len(self.taddc)):
-            el = self.taddc[i]
+        for i in range(len(self.triplo)):
+            el = self.triplo[i]
             size += len(el['triplo'])
             if el['type'] == 'while':
                 w_index = i
@@ -216,15 +226,16 @@ class JavaParser(object):
             elif not band:
                 taddc_table += el['triplo']
             if band:
-                if el['line'] <= self.taddc[w_index]['end']:
-                    t = self.taddc[i]
-                    self.taddc[w_index]['triplo'] += t['triplo']
-                if self.taddc[-1] == el:
-                    body = len(self.taddc[w_index]['triplo'])
+                if el['line'] <= self.triplo[w_index]['end']:
+                    t = self.triplo[i]
+                    self.triplo[w_index]['triplo'] += t['triplo']
+                if self.triplo[-1] == el:
+                    body = len(self.triplo[w_index]['triplo'])
                     print(start, body)
-                    data = intermediate_code(self.taddc[w_index]['cond'], isWhile=True, start=start, body=body)
+                    data = IntermediateCode.iterative(
+                        self.triplo[w_index]['cond'], isWhile=True, start=start, body=body)
                     taddc_table += flatten(data)
-                    taddc_table += self.taddc[w_index]['triplo']
+                    taddc_table += self.triplo[w_index]['triplo']
                     taddc_table.append({
                         'obj': '',
                         'fuente': start,
@@ -232,23 +243,23 @@ class JavaParser(object):
                     })
         return self.semerrors, self.names, taddc_table
 
-    def compile_from_file(self, file_path):
-        f = open(file_path, 'r')
-        program = f.read()
-        self.compile(program)
-        f.close()
-
     def taddc_aritmetic(self, var, assign, expression, line):
         infix = flatten(expression)  # obtain a flat array of elements
         self.check_types(var, infix, line)
         postfix = infix_to_postfix(infix)
-        # print(expression, infix, postfix)
-        data = intermediate_code(postfix, var)
+        data = self.taddc.aritmetic(postfix, var)
+        print(data)
         return {
             'type': 'aritmetic',
             'line': line,
             'triplo': data
         }
+
+    def compile_from_file(self, file_path):
+        f = open(file_path, 'r')
+        program = f.read()
+        self.compile(program)
+        f.close()
 
     def existing_var(self, name, line):
         try:

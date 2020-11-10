@@ -1,8 +1,11 @@
-#-----------------------
-# lexer.py
-#
-# Análisis Léxico
-#-----------------------
+"""
+Author: Raul Novelo
+        raul.novelo@aaaimx.org
+
+        `lexer.py` is a implementation of PLY Lex
+
+        Sintatic and Semantic Analysis.
+"""
 import ply.lex as lex
 import sys
 import re
@@ -25,9 +28,9 @@ multiple_tok = (
 )
 
 class JavaLexer(object):
-    '''
-    Clase para el analisis lexico
-    '''
+    """
+    Class for Lexical Analysis
+    """
     tokens = (
         'TD1',
         'TD2',
