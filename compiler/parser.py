@@ -142,13 +142,13 @@ class JavaParser(object):
 
     def p_while(self, p):
         '''iterators : IT1 DEL1 expr DEL2 DEL3 S DEL4'''
-        # infix = flatten(p[3])
-        # p[0] = {'type': p[1],
-        #         'line': p.lineno(1),
-        #         # 'cond': infix_to_postfix(infix),
-        #         'triplo': [],
-        #         'end': p.lineno(7)
-        #         }
+        infix = flatten(p[3])
+        p[0] = {'type': p[1],
+                'line': p.lineno(1),
+                'cond': infix_to_postfix(infix),
+                'triplo': [],
+                'end': p.lineno(7)
+                }
 
     def p_expr(self, p):
         '''expr : expr_rec'''
@@ -232,8 +232,8 @@ class JavaParser(object):
                 if self.triplo[-1] == el:
                     body = len(self.triplo[w_index]['triplo'])
                     print(start, body)
-                    data = IntermediateCode.iterative(
-                        self.triplo[w_index]['cond'], isWhile=True, start=start, body=body)
+                    data = self.taddc.iterative(
+                        self.triplo[w_index]['cond'], start=start, body=body)
                     taddc_table += flatten(data)
                     taddc_table += self.triplo[w_index]['triplo']
                     taddc_table.append({
