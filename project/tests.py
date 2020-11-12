@@ -43,7 +43,8 @@ class CompilerTestCase(TestCase):
                          ['a', 'b', '<',  'a', 0, '==', '&&'])
         self.assertEqual(infix_to_postfix(['a', '%', 2, '==', 0, '&&', 'a', '<', 20]),
                          ['a', 2, '%', 0, '==', 'a', 20, '<', '&&'])
-        self.assertEqual(infix_to_postfix(['a', '==', 0]), ['a', 0, '=='])
+        self.assertEqual(infix_to_postfix(
+            ['x', '*', 6, '==', 'y', '+', 7]), ['x', 6, '*', 'y',  7, '+', '==',])
 
     def test_compiler_parser(self):
         """Test for JavaParser and JavaLexer"""

@@ -12,7 +12,14 @@ Author: Raul Novelo
 
 import re
 import csv
-from .constants import OPERATORS, PRECEDENCE
+from .constants import (
+    OPAR,
+    OPRE,
+    OPLO,
+    PRECEDENCE,
+    OPERATORS
+)
+
 
 def dictToCsv(data, filename):
     """Create a CSV file from a list"""
@@ -44,15 +51,12 @@ def flatten(seq):
     return l
 
 
-def infix_to_postfix(array):
+def infix_to_postfix(infix):
     '''
     Funcion para crear un posfijo desde un infijo lógico/relacional
     '''
     postfix = []
     opStack = []
-    infix = []
-    for symbol in array:
-        infix.append(symbol)
 
     for symbol in infix:
         if symbol not in OPERATORS:
@@ -74,3 +78,8 @@ def infix_to_postfix(array):
     while not opStack == []:
         postfix.append(opStack.pop())
     return postfix
+
+
+if __name__ == '__main__':
+    # infix_to_postfix(['a', '<', 'b', '&&', 'a', '==', 0])
+    infix_to_postfix(['x', '*', 6, '==', 'y', '+', 7])

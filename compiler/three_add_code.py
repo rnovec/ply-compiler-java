@@ -38,7 +38,7 @@ class IntermediateCode(object):
         string = list(reversed(postfix))
         aux = list()  # auxiliar stack
         taddc = list()  # Three Addres Code (EDD)
-        tmpCont = 0  # temporals counter
+        tmpCont = 1  # temporals counter
         lastPrecedence = None
         el = string.pop()  # get the first operand
         while el is not None:
@@ -106,49 +106,43 @@ class IntermediateCode(object):
         Intermediate Code for `while` instruction
         """
         # reverse the list to use as stack
+
         string = list(reversed(postfix))
         aux = list()  # auxiliar stack
         taddc = list()  # Three Addres Code (EDD)
-        tmpCont = 1  # temporals counter
+        tmpCont = 0  # temporals counter
         trCont = trSize = 0  # TR counter
         lastPrecedence = lastOpLo = None
         lastTr = None
         el = string.pop()  # get the first operand
         while el is not None:
+            # Recorrer la expresión hasta encontrar el primer operador
             if el in OPAR:
+                # Asignar a una variable auxiliar, el operador y los operandos previos
+                # Asignar a una segunda variable auxiliar, el operador y los 2 operandos previos.
                 op2 = aux.pop()
                 op1 = aux.pop()
-                tmpCont += 1
+                if type(op1) is not str:
+                    op1 = f'T{tmpCont}'
                 taddc.append({
-                    'obj': f'T{tmpCont}',
-                    'fuente': op1,
-                    'op': '='
-                })
-                trSize += 1
-                taddc.append({
-                    'obj': f'T{tmpCont}',
+                    'obj': op1,
                     'fuente': op2,
                     'op': el
                 })
                 trSize += 1
-                aux.append(f'T{tmpCont}')
+                aux.append(op1)
 
             elif el in OPRE:
                 op2 = aux.pop()
                 op1 = aux.pop()
                 taddc.append({
-                    'obj': f'T{tmpCont}',
-                    'fuente': op1,
-                    'op': '='
-                })
-                trSize += 1
-                taddc.append({
-                    'obj': f'T{tmpCont}',
+                    'obj': op1,
                     'fuente': op2,
                     'op': el
                 })
                 trSize += 3
                 trCont += 1
+                tmpCont = 0
                 obj = f'TR{trCont}'
                 if not lastTr:
                     lastTr = TR(obj, trSize, start, body)
@@ -178,11 +172,24 @@ class IntermediateCode(object):
                             'op': taddc[i].jmpFalse
                         }]
                 lastOpLo = el
-
             else:
-                aux.append(el)
+                if type(el) is str:
+                    tmpCont += 1
+                    trSize += 1
+                    taddc.append({
+                        'obj': f'T{tmpCont}',
+                        'fuente': el,
+                        'op': '='
+                    })
+                    aux.append(f'T{tmpCont}')
+                else:
+                    aux.append(el)
+
+            # Se verifica el fin de cadena original
             if len(string) == 0:
                 break
+            # Se regresa al paso P2
+            # se lee el siguiente operando
             el = string.pop()
         if not lastOpLo:
             band = False

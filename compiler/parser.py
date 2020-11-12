@@ -155,7 +155,11 @@ class JavaParser(object):
         p[0] = p[1]
 
     def p_mod(self, p):
-        '''expr : expr OPAR5 expr'''
+        '''expr : expr OPAR1 expr
+                | expr OPAR2 expr
+                | expr OPAR3 expr
+                | expr OPAR4 expr
+                | expr OPAR5 expr'''
         p[0] = [p[1], p[2], p[3]]
 
     def p_val(self, p):
