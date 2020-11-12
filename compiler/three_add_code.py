@@ -3,7 +3,7 @@
 Author: Raul Novelo
         raul.novelo@aaaimx.org
 
-        Intermdiate code classes and 3-Address Code table generation
+        Intermediate code classes and 3-Address Code table generation
 """
 
 from .constants import *
@@ -38,7 +38,7 @@ class IntermediateCode(object):
         string = list(reversed(postfix))
         aux = list()  # auxiliar stack
         taddc = list()  # Three Addres Code (EDD)
-        tmpCont = 1  # temporals counter
+        tmpCont = 0  # temporals counter
         lastPrecedence = None
         el = string.pop()  # get the first operand
         while el is not None:

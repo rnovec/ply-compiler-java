@@ -85,18 +85,6 @@ class JavaParser(object):
                     | expression OPAR5 expression'''
         p[0] = [p[1], p[2], p[3]]
 
-    def calc(self, op, val1, val2):
-        val = None
-        if op == '+':
-            val = val1 + val2
-        elif op == '-':
-            val = val1 - val2
-        elif op == '*':
-            val = val1 * val2
-        elif op == '/':
-            val = val1 / val2
-        return val
-
     def p_expression_group(self, p):
         'expression : DEL1 expression DEL2'
         p[0] = [p[1], p[2], p[3]]
@@ -154,7 +142,7 @@ class JavaParser(object):
         '''expr : expr_rec'''
         p[0] = p[1]
 
-    def p_mod(self, p):
+    def p_expr_binop(self, p):
         '''expr : expr OPAR1 expr
                 | expr OPAR2 expr
                 | expr OPAR3 expr
