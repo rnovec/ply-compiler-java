@@ -206,24 +206,25 @@ class JavaParser(object):
         self.triplo = list(sorted(self.triplo, key=lambda i: i['line']))
         size = start = body = 0
         taddc_table = list()
-        band = False
-        findAll = False
+        isWhile = False
         for i in range(len(self.triplo)):
             el = self.triplo[i]
-            size += len(el['triplo'])
             if el['type'] == 'while':
                 w_index = i
                 start = size + 1
-                band = True
-            elif not band:
-                taddc_table += el['triplo']
-            if band:
-                if el['line'] <= self.triplo[w_index]['end']:
+                isWhile = True
+                continue
+            elif isWhile:
+                line_end = self.triplo[w_index]['end']
+                if el['line'] <= line_end:
                     t = self.triplo[i]
                     self.triplo[w_index]['triplo'] += t['triplo']
-                if self.triplo[-1] == el:
+                try:
+                    nextEl = self.triplo[i + 1]
+                except:
+                    nextEl = None
+                if not nextEl or nextEl['line'] > line_end:
                     body = len(self.triplo[w_index]['triplo'])
-                    print(start, body)
                     data = self.taddc.iterative(
                         self.triplo[w_index]['cond'], start=start, body=body)
                     taddc_table += flatten(data)
@@ -233,6 +234,16 @@ class JavaParser(object):
                         'fuente': start,
                         'op': 'JR'
                     })
+                    size = len(taddc_table)
+                    isWhile = False
+            else:
+                taddc_table += el['triplo']
+                size += len(el['triplo'])
+        taddc_table.append({
+            'obj': '',
+            'fuente': '',
+            'op': ''
+        })
         return self.semerrors, self.names, taddc_table
 
     def taddc_aritmetic(self, var, assign, expression, line):
@@ -240,7 +251,6 @@ class JavaParser(object):
         self.check_types(var, infix, line)
         postfix = infix_to_postfix(infix)
         data = self.taddc.aritmetic(postfix, var)
-        print(data)
         return {
             'type': 'aritmetic',
             'line': line,
