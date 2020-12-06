@@ -59,8 +59,7 @@ class JavaParser(object):
 
     def p_var_declarations(self, p):
         '''declarations : types ID AS1 expression'''
-        self.create_new_var(p[1], p[2], p.lineno(2))
-        p[0] = self.taddc_aritmetic(p[2], p[3], p[4], p.lineno(2))
+        p[0] = self.taddc_aritmetic(p[2], p[3], p[4], p.lineno(2), type=p[1])
 
     def p_var_declarations_error(self, p):
         '''declarations : ID ID AS1 expression'''
@@ -75,6 +74,8 @@ class JavaParser(object):
     def p_expression_name_assign(self, p):
         '''declarations : ID AS1 expression'''
         # self.names[p[1]] = p[3]
+        if p[3] is None:
+            p[3] = [0]
         p[0] = self.taddc_aritmetic(p[1], p[2], p[3], p.lineno(2))
 
     def p_expression_binop(self, p):
@@ -83,7 +84,7 @@ class JavaParser(object):
                     | expression OPAR3 expression
                     | expression OPAR4 expression
                     | expression OPAR5 expression'''
-        p[0] = [p[1], p[2], p[3]]
+        p[0] = self.optimize(p)
 
     def p_expression_group(self, p):
         'expression : DEL1 expression DEL2'
@@ -131,6 +132,9 @@ class JavaParser(object):
     def p_while(self, p):
         '''iterators : IT1 DEL1 expr DEL2 DEL3 S DEL4'''
         infix = flatten(p[3])
+        for el in infix:
+            if type(el) is str and el not in OPERATORS:
+                self.existing_var(el, p.lineno(1))
         p[0] = {'type': p[1],
                 'line': p.lineno(1),
                 'cond': infix_to_postfix(infix),
@@ -201,8 +205,46 @@ class JavaParser(object):
         self.taddc = IntermediateCode()
 
     def compile(self, program):
+        self.program = program.split('\n')
         self.parser.parse(program)
         self.semerrors += self.errors.values()
+        self.taddc_table = self.generate_taddc()
+        self.asm = self.generate_objcode()
+        return self.semerrors, self.names, self.taddc_table, self.asm, self.program
+
+    def generate_objcode(self):
+        aux = None
+        asm = []
+        labels = []
+        for el in self.taddc_table:
+            if re.match(r'T\d', el['obj']):
+                el['obj'] = REGISTERS[el['obj']]
+
+            if re.match(r'T\d', str(el['fuente'])):
+                el['fuente'] = REGISTERS[el['fuente']]
+            try:
+                if el['op'] == 'JR':
+                    asm.append('JMP label%d' % el['fuente'])
+                    labels.append(el['fuente'])
+                elif el['op'] in OPRE:
+                    aux = el
+                    asm.append('CMP %s, %s' % (el['obj'], el['fuente']))
+                else:
+                    asm.append('%s %s, %s' %
+                               (ASSEMBLY[el['op']], el['obj'], el['fuente']))
+            except:
+                if el['fuente'] == 'TRUE':
+                    asm.append('%s label%d' % (ASSEMBLY[aux['op']], el['op']))
+                    labels.append(el['op'])
+                elif el['obj']:
+                    asm.append('JMP label' + str(el['op']))
+                    labels.append(el['op'])
+        asm.append('')
+        for label in set(labels):
+            asm[label - 1] = 'label%d: %s' % (label, asm[label - 1])
+        return asm
+
+    def generate_taddc(self):
         self.triplo = list(sorted(self.triplo, key=lambda i: i['line']))
         size = start = body = 0
         taddc_table = list()
@@ -244,13 +286,50 @@ class JavaParser(object):
             'fuente': '',
             'op': ''
         })
-        return self.semerrors, self.names, taddc_table
 
-    def taddc_aritmetic(self, var, assign, expression, line):
+        return taddc_table
+
+    def optimize(self, p):
+        res = [p[1], p[2], p[3]]
+
+        if p[2] == '*':
+            if p[1] == 1:
+                res = [p[3]]
+            if p[3] == 1:
+                res = [p[1]]
+            if p[1] == 0 or p[3] == 0:
+                res = 0
+
+        if p[2] == '/':
+            if p[3] == 1:
+                res = [p[1]]
+            if p[1] == 0:
+                res = None
+
+        if p[2] == '+':
+            if p[3] == 0:
+                res = [p[1]]
+            if p[1] == 0:
+                res = [p[3]]
+
+        if p[2] == '-':
+            if p[3] == 0:
+                res = [p[3]]
+
+        return res
+
+    def taddc_aritmetic(self, var, assign, expression, line, type=None):
         infix = flatten(expression)  # obtain a flat array of elements
         self.check_types(var, infix, line)
         postfix = infix_to_postfix(infix)
         data = self.taddc.aritmetic(postfix, var)
+
+        if type is not None:
+            self.create_new_var(type, var, line)
+            var = type + ' ' + var
+            
+        res = ' '.join(map(str, infix))
+        self.program[line - 1] = '%s = %s;' % (var, res)
         return {
             'type': 'aritmetic',
             'line': line,

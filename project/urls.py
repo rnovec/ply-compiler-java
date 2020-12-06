@@ -31,7 +31,7 @@ def compile(request):
     JL = JavaLexer()
     JP = JavaParser()
     tokensFile, simbolTable, lexerr = JL.tokenizer(program)
-    errors, names, taddc = JP.compile(program)
+    errors, names, taddc, asm, program = JP.compile(program)
     for t in simbolTable:
         if re.match(r'ID', t['type']):
             try:
@@ -40,8 +40,10 @@ def compile(request):
                 pass
     return JsonResponse({'simbolTable': simbolTable,
                          'tokensFile': tokensFile,
+                         'program': program,
                          'errors': lexerr + errors,
-                         'taddc': taddc
+                         'taddc': taddc,
+                         'asm': asm
                          })
 
 
