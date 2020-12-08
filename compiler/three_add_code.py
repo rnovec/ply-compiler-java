@@ -213,28 +213,29 @@ class IntermediateCode(object):
         for el in triplo:
             obj = el['obj']
             fuente = el['fuente']
+            op = el['op']
             if re.match(r'T\d', obj):
                 obj = REGISTERS[obj]
 
             if re.match(r'T\d', str(fuente)):
                 fuente = REGISTERS[fuente]
             try:
-                if el['op'] == 'JR':
+                if op == 'JR':
                     asm.append('JMP label%d' % fuente)
                     labels.append(fuente)
-                elif el['op'] in OPRE:
+                elif op in OPRE:
                     aux = el
                     asm.append('CMP %s, %s' % (obj, fuente))
                 else:
                     asm.append('%s %s, %s' %
-                               (ASSEMBLY[el['op']], obj, fuente))
+                               (ASSEMBLY[op], obj, fuente))
             except:
                 if fuente == 'TRUE':
-                    asm.append('%s label%d' % (ASSEMBLY[aux['op']], el['op']))
-                    labels.append(el['op'])
+                    asm.append('%s label%d' % (ASSEMBLY[aux['op']], op))
+                    labels.append(op)
                 elif obj:
-                    asm.append('JMP label' + str(el['op']))
-                    labels.append(el['op'])
+                    asm.append('JMP label' + str(op))
+                    labels.append(op)
         asm.append('')
         for label in set(labels):
             asm[label - 1] = 'label%d: %s' % (label, asm[label - 1])
