@@ -41,8 +41,8 @@ ASSEMBLY = {
 }
 
 REGISTERS = {
-    'T1': 'AX',
-    'T2': 'BX',
-    'T3': 'CX',
-    'T4': 'DX',
+    'T1': 'AL',
+    'T2': 'AH',
+    'T3': 'BL',
+    'T4': 'BH',
 }

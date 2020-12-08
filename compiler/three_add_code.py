@@ -206,6 +206,41 @@ class IntermediateCode(object):
                     }]
         return taddc
 
+    def generate_objcode(self, triplo):
+        aux = None
+        asm = []
+        labels = []
+        for el in triplo:
+            obj = el['obj']
+            fuente = el['fuente']
+            if re.match(r'T\d', obj):
+                obj = REGISTERS[obj]
+
+            if re.match(r'T\d', str(fuente)):
+                fuente = REGISTERS[fuente]
+            try:
+                if el['op'] == 'JR':
+                    asm.append('JMP label%d' % fuente)
+                    labels.append(fuente)
+                elif el['op'] in OPRE:
+                    aux = el
+                    asm.append('CMP %s, %s' % (obj, fuente))
+                else:
+                    asm.append('%s %s, %s' %
+                               (ASSEMBLY[el['op']], obj, fuente))
+            except:
+                if fuente == 'TRUE':
+                    asm.append('%s label%d' % (ASSEMBLY[aux['op']], el['op']))
+                    labels.append(el['op'])
+                elif obj:
+                    asm.append('JMP label' + str(el['op']))
+                    labels.append(el['op'])
+        asm.append('')
+        for label in set(labels):
+            asm[label - 1] = 'label%d: %s' % (label, asm[label - 1])
+        return asm
+
+
 
 if __name__ == "__main__":
     while_case = ['a', 2, '%', 0, '==', 'a', 20, '<', '||']

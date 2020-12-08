@@ -208,41 +208,9 @@ class JavaParser(object):
         self.program = program.split('\n')
         self.parser.parse(program)
         self.semerrors += self.errors.values()
-        self.taddc_table = self.generate_taddc()
-        self.asm = self.generate_objcode()
-        return self.semerrors, self.names, self.taddc_table, self.asm, self.program
-
-    def generate_objcode(self):
-        aux = None
-        asm = []
-        labels = []
-        for el in self.taddc_table:
-            if re.match(r'T\d', el['obj']):
-                el['obj'] = REGISTERS[el['obj']]
-
-            if re.match(r'T\d', str(el['fuente'])):
-                el['fuente'] = REGISTERS[el['fuente']]
-            try:
-                if el['op'] == 'JR':
-                    asm.append('JMP label%d' % el['fuente'])
-                    labels.append(el['fuente'])
-                elif el['op'] in OPRE:
-                    aux = el
-                    asm.append('CMP %s, %s' % (el['obj'], el['fuente']))
-                else:
-                    asm.append('%s %s, %s' %
-                               (ASSEMBLY[el['op']], el['obj'], el['fuente']))
-            except:
-                if el['fuente'] == 'TRUE':
-                    asm.append('%s label%d' % (ASSEMBLY[aux['op']], el['op']))
-                    labels.append(el['op'])
-                elif el['obj']:
-                    asm.append('JMP label' + str(el['op']))
-                    labels.append(el['op'])
-        asm.append('')
-        for label in set(labels):
-            asm[label - 1] = 'label%d: %s' % (label, asm[label - 1])
-        return asm
+        taddc_table = self.generate_taddc()
+        asm = self.taddc.generate_objcode(taddc_table)
+        return self.semerrors, self.names, taddc_table, asm, self.program
 
     def generate_taddc(self):
         self.triplo = list(sorted(self.triplo, key=lambda i: i['line']))
