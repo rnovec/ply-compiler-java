@@ -84,7 +84,7 @@ class JavaParser(object):
                     | expression OPAR3 expression
                     | expression OPAR4 expression
                     | expression OPAR5 expression'''
-        p[0] = self.optimize(p)
+        p[0] = self.optimize(p[1], p[2], p[3])
 
     def p_expression_group(self, p):
         'expression : DEL1 expression DEL2'
@@ -152,7 +152,7 @@ class JavaParser(object):
                 | expr OPAR3 expr
                 | expr OPAR4 expr
                 | expr OPAR5 expr'''
-        p[0] = [p[1], p[2], p[3]]
+        p[0] = self.optimize(p[1], p[2], p[3])
 
     def p_val(self, p):
         '''expr : ID
@@ -257,33 +257,44 @@ class JavaParser(object):
 
         return taddc_table
 
-    def optimize(self, p):
-        res = [p[1], p[2], p[3]]
+    def optimize(self, left, opar, right):
+        res = [left, opar, right]
 
-        if p[2] == '*':
-            if p[1] == 1:
-                res = [p[3]]
-            if p[3] == 1:
-                res = [p[1]]
-            if p[1] == 0 or p[3] == 0:
+        areNumbers = type(left) == type(right) and (
+            type(left) == int or type(left) == float)
+
+        if opar == '*':
+            if left == 1:
+                res = [right]
+            if right == 1:
+                res = [left]
+            if left == 0 or right == 0:
                 res = 0
+            if areNumbers:
+                res = left * right
 
-        if p[2] == '/':
-            if p[3] == 1:
-                res = [p[1]]
-            if p[1] == 0:
+        if opar == '/':
+            if right == 1:
+                res = [left]
+            if left == 0:
                 res = None
+            if areNumbers:
+                res = left / right
 
-        if p[2] == '+':
-            if p[3] == 0:
-                res = [p[1]]
-            if p[1] == 0:
-                res = [p[3]]
+        if opar == '+':
+            if right == 0:
+                res = [left]
+            if left == 0:
+                res = [right]
+            if areNumbers:
+                res = left + right
 
-        if p[2] == '-':
-            if p[3] == 0:
-                res = [p[3]]
-
+        if opar == '-':
+            if right == 0:
+                res = [right]
+            if areNumbers:
+                res = left - right
+        
         return res
 
     def taddc_aritmetic(self, var, assign, expression, line, type=None):
