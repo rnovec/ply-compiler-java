@@ -210,13 +210,15 @@ class IntermediateCode(object):
         aux = None
         asm = []
         labels = []
+        acc = []
+        i = 0
         for el in triplo:
             obj = el['obj']
             fuente = el['fuente']
             op = el['op']
+
             if re.match(r'T\d', obj):
                 obj = REGISTERS[obj]
-
             if re.match(r'T\d', str(fuente)):
                 fuente = REGISTERS[fuente]
             try:
@@ -225,10 +227,20 @@ class IntermediateCode(object):
                     labels.append(fuente)
                 elif op in OPRE:
                     aux = el
+                    if triplo[i - 1]['op'] == '%':
+                        obj = 'AH'
                     asm.append('CMP %s, %s' % (obj, fuente))
                 else:
-                    asm.append('%s %s, %s' %
-                               (ASSEMBLY[op], obj, fuente))
+                    if ASSEMBLY[op] in ['MUL', 'DIV']:
+                        tmp = 'BL'
+                        acc.append([i, 'MOV %s, %s' % (tmp, fuente)])
+                        asm.append('%s %s' % (ASSEMBLY[op], tmp))
+                    else:
+                        if triplo[i + 1]['op'] in ['%', '/']:
+                            obj = 'AX'
+                        if triplo[i - 1]['op'] == '%':
+                            fuente = 'AH'
+                        asm.append('%s %s, %s' % (ASSEMBLY[op], obj, fuente))
             except:
                 if fuente == 'TRUE':
                     asm.append('%s label%d' % (ASSEMBLY[aux['op']], op))
@@ -236,11 +248,18 @@ class IntermediateCode(object):
                 elif obj:
                     asm.append('JMP label' + str(op))
                     labels.append(op)
+            i += 1
         asm.append('')
+        
+        # set labels
         for label in set(labels):
             asm[label - 1] = 'label%d: %s' % (label, asm[label - 1])
-        return asm
 
+        # set mul and div compensation
+        for i in range(len(acc)):
+            asm.insert(acc[i][0] + i, acc[i][1])
+        
+        return asm
 
 
 if __name__ == "__main__":

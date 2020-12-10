@@ -42,7 +42,7 @@ ASSEMBLY = {
 
 REGISTERS = {
     'T1': 'AL',
-    'T2': 'AH',
-    'T3': 'BL',
+    'T2': 'BL',
+    'T3': 'AH',
     'T4': 'BH',
 }
