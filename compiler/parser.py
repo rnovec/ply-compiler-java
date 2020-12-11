@@ -298,15 +298,18 @@ class JavaParser(object):
         return res
 
     def taddc_aritmetic(self, var, assign, expression, line, type=None):
+
+        if type is not None:
+            self.create_new_var(type, var, line)
+
         infix = flatten(expression)  # obtain a flat array of elements
         self.check_types(var, infix, line)
         postfix = infix_to_postfix(infix)
         data = self.taddc.aritmetic(postfix, var)
 
         if type is not None:
-            self.create_new_var(type, var, line)
             var = type + ' ' + var
-            
+        
         res = ' '.join(map(str, infix))
         self.program[line - 1] = '%s = %s;' % (var, res)
         return {
